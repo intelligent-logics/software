@@ -1,0 +1,257 @@
+Eriberto Perez: 21.25
+Steven Miller: 25.0
+Patrick Lehman: 14.5
+Kieran Abesamis: 16.5
+Jonas Wood: 14.5
+
+Total hours 91.75
+
+We are well within our 60-100 hour requirement. Great job guys!
+
+2 28 24
+Steven Miller — 02/28/2024 11:20 AM
+start: 11:00 am
+end: 11:30 am
+task: looking for mister hardware
+
+Beto Perez — 02/28/2024 11:21 AM
+Start: 11:00 AM
+End: 11:25 AM
+task: looking for mister. Emphasizing functionality for our purpose over verbosity
+
+
+3 6 24
+Kieran Abesamis — 03/06/2024 4:25 PM
+Start: 11:00AM
+End: 11:15AM
+Task: Reviewing Design Revision Notes, Researching Power for MiSTER
+
+Start: 4:00PM
+End: 4:24PM
+Task: Editing Storyboard for Design Revision
+
+
+Steven Miller — 03/06/2024 7:42 PM
+start: 12:00pm
+end: 3:00
+task: adjusting schematic in design revision
+start:7:00pm
+end:8:00pm
+task: adding more roms to our mister, removing unneeded cores.
+
+Jonas Wood — 03/06/2024 8:36 PM
+start: 7:00pm
+end: 9:00pm
+task: add project roles, timeline to Statement of Work in Design Revision
+
+Jonas Wood — 03/06/2024 10:34 PM
+start: 9:30pm
+end: 10:30pm
+task: cont. project timeline, breakdown of specific milestones to be accomplished throughout project
+
+Steven Miller — 03/06/2024 11:07 PM
+start:10:40pm
+end: 11:06pm
+task: final check for design draft
+
+Beto Perez — 03/06/2024 11:10 PM
+Wednesday - March 6 2024
+12-1:30 AM fleshing out revision, discussing new architecture now that we are not doing a CPU or OS
+
+12-3:00 PM Put in systems diagram, put more details, found sources for power consumption and NES architecture
+9:45-11:10 PM Finishing touches, discussing dates and splitting of work and roles. Writing in the table with Jonas.
+
+
+3 16 24
+Steven Miller — 03/16/2024 2:27 PM
+date: march 12 2024
+start: 3:30pm
+end: 6:45pm
+task: research for how cyclone V will be flashed, schematics drawn aswell
+
+
+3 17 24
+Steven Miller -3/16/2024 
+date: march 16 2024
+start: 11:30 pm
+end: 12:30 am
+task: research for connecting cyclone V to external storage device
+Beto Perez — 03/17/2024 8:53 PM
+Sunday - March 17 2024
+5:30-8:50 PM more research, finishing basic 6502 tutorial. Set up neslib c library. Successfully built and ran on emulator a "GO GATORS" message and verified NTSC mode.
+
+Steven Miller — 03/17/2024 10:32 PM
+date: march 17 2024
+start: 9:00 pm
+end: 10:30 pm
+task: setting up NES test code through CC65
+
+
+3 18 24
+Steve Miller -3/18/2024
+date: march 18 2024
+start: 2:30 pm
+end: 3:00 pm
+task: documenting mister, setting up wifi for mister.
+Steven Miller — 03/18/2024 6:24 PM
+date: march 18 2024
+start: 5:30 pm
+end: 6:00 pm
+task: configuring mister for quartus prime debugging, loading new games
+
+Steven Miller — 03/19/2024 2:59 PM
+date: march 19 2024
+start: 1 pm
+end: 3 pm
+task: talking with mister engineers about the NES core is organized
+Steven Miller — 03/20/2024 2:27 PM
+date: march 20 2024
+start: 12 pm
+end: 2:30 pm
+task: stripping down MISTER NES core so it will fit within a de-10 lite
+
+Beto Perez — 03/20/2024 11:02 PM
+Wednesday - March 20 2024
+10:00-11:00 PM banging my head against the wall known as GitHub and setting up the repo.
+
+
+3 21 24
+Patrick Lehman — 03/21/2024 12:17 PM
+Thursday - March 21, 2024
+10:30-12:15 PM Worked on logic for NES Emulator Boot menu 
+
+Jonas Wood — 03/21/2024 12:25 PM
+date: March 21, 2024
+start: 11am
+end: 12:15pm
+task: set up NES emulator on my laptop to run sample program and successfully interfaced with NES controller
+
+Steven Miller — 03/21/2024 12:36 PM
+date: March 21, 2024
+start: 11am
+end: 12:15pm
+task: set up NES hardware and software repo
+
+Jonas Wood — 03/21/2024 1:26 PM
+date: March 19, 2024
+start: 10:15am
+end: 12:35
+task: attended meeting, saw running sample code on NES emulator from Beto, successfully ran sample code on MiSTer at lab with team
+
+Kieran Abesamis — 03/21/2024 2:22 PM
+date: March 21, 2024
+start: 1:30PM
+end: 2:20PM
+task: set up NES Emulator and EMS Software repo 
+
+Steven Miller — 03/21/2024 2:32 PM
+date: March 21, 2024
+start: 1:30 pm
+end: 2:30 pm
+task: creating development kit using hardware given by carsten
+
+Beto Perez — 03/21/2024 3:57 PM
+Thursday - March 21 2024
+2:15-3:50 PM foreground sprite rendering! Check it out in the lab. I have also researched how sprites work and how to draw them onto the screen. Next order of business is editing the tile map to include an arrow and gator sprite. Amazing progress!
+4:55-5:50PM figured out how to adjust palette and sprites. Sprites are Hard codes from a .CHR file we can edit. We can set pallettes in C which will be written to VRAM 
+
+Steven Miller — 03/21/2024 8:09 PM
+date: March 21, 2024
+start: 5:30 pm
+end: 8:00 pm
+task: creating development kit using hardware given by carsten, testing nes core on de-10 lite.
+
+
+3 22 24
+Friday - March 22 2024
+1:45 -3 :15 AM after raging from Fortnite, I felt productive. I created a fake menu that handles input and menu selection. That is step 0.5. This week, we hit the ground on outside memory, how the Genie worked, and actual bootloader stuff
+
+Kieran Abesamis — 03/22/2024 1:18 PM
+Date: Friday - March 22 2024
+Time: 12:00PM - 1:15PM
+Task: Tried stripping down NESTang Core, downloading GinWin IDE. Unable to compile it cause the documentation for it was pretty bad.
+
+Steven Miller — 03/22/2024 7:25 PM
+date: March 22, 2024
+start: 12:00 pm
+end: 3:00 pm
+task: analyzing nes core
+
+
+3 25 24
+Patrick Lehman — 03/25/2024 6:12 PM
+date: March 25, 2024
+start: 4:10 pm
+end: 6:25 pm
+task: Fixing menu logic
+
+Beto Perez — 03/25/2024 6:16 PM
+Monday - March 25 2024
+2:30 - 6:15 PM Proving (it worked) that we can read and write to an address, additionally fixing out menu logic with Patrick. We don't know the address, likely 0x00 in the zero page, but thankfully we don't need to know. Dr. Blanchard let us know where exactly to read and write.
+
+
+3 26 24
+Steven Miller — 03/26/2024 3:03 AM
+date: March 25, 2024
+start: 2:00 pm
+end: 6:00 pm
+task: analyzing nes core
+
+Steven Miller — 03/26/2024 8:50 PM
+date: March 25, 2024
+start: 3:00 pm
+end: 6:00 pm
+task: analyzing nes core
+
+
+3 27 24
+Kieran Abesamis — Yesterday at 10:47 AM
+Date: Tuesday - March 26 2024
+Time: 1:00PM - 1:45PM
+Task: Cloned FPGAnes repo, tried compiling the core on Quartus but was unsuccessful 
+
+Kieran Abesamis — Yesterday at 1:35 PM
+Date: Wednesday - March 27 2024
+Time: 10:45AM - 1:45PM
+Task: Found DE10 Lite NES Emulator, compiled on Quartus. Downloaded Xilinx for FPGAnes for compilation.
+
+Kieran Abesamis — Yesterday at 7:19 PM
+Date: Wednesday - March 27 2024
+Time: 6:15PM-7:10PM
+Task: Unsuccessful compilation of Xilinx core, studied DE10 emulator
+
+
+3 28 24
+Jonas Wood — Today at 10:24 AM
+date: March 26, 2024
+time: 10:15-11:20am
+task: attended meeting, took & uploaded meeting minutes. discussed hardware/software for pre-alpha build, ideas of firmware w/microprocessor to read from SD card to FPGA core
+
+Jonas Wood — Today at 1:14 PM
+date: March 28, 2024
+time: 11:20am - 1:10pm
+task: begun work on C code (to be executed on microprocessor) to move files from SD card to SDRAM. worked on design in pre-alpha build document
+
+Beto Perez — Today at 2:09 PM
+Thursday - March 28 2024
+11:00 AM - 2:00 PM paging! Also remembered technical limitations (2kb ram). Discussed with Patrick and Jonas about additional microcontroller functionality in writing to memory addresses. Menu has changing pages, but a problem: longer titles do not get overwritten, leading to problems in the titles listed. This is easily fixable by brute force, but maybe there’s a better solution
+
+Kieran Abesamis — Today at 5:23 PM
+Date: Thursday - March 28 2024
+Time: 1:00PM-1:45PM, 3:00PM-4:30PM
+Task: Discussed Hardware next steps, Pre-Alpha Build Diagram, report for Architectural components
+
+
+
+ADDITIONAL:
+Software (Beto, Patrick, Jonas) watched videos and read wikis on how to get started in writing code that can run on the NES. This research comes to about 3 hours each for finishing the tutorials, experimentation, and reading documentation
+https://www.youtube.com/watch?v=yEiNs7pKNh8&list=PLgvDB6LWam2WvoFvh8tlUqbqw92qWM0aP
+https://www.nesdev.org/wiki/Nesdev_Wiki
+
+
+Hardware (Steven, Patrick, Kieran) have had much research and conversation into the technicals of the project with each other and other engineers (about 4 hours). Additionatlly have their own contributions to their part of the repository (2 hours). This can be found on the MiSTer discord and private messages with Steven.
+
+Additionally, Patrick has pushed some commits with Jonas on input detection logic (2 hours each)
+
+
+
