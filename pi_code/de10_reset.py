@@ -13,7 +13,7 @@ import os
 
 gameTitle = "fpganes"
 # game_path = f"/home/intelligentlogics/CODE/sofFiles/{gameTitle}.sof@2"
-game_path = f"C:\\Users\\jonas\\Documents\\GitHub-Repos\\software\\pi_code\\autoquartus\\{gameTitle}.sof@2"
-cliCommand = fr"quartus_pgm -c 'DE-SoC [USB-1]' -m JTAG -o p;{game_path}"
+game_path = f"C:\\Users\\steve\\git_repos\\school\\cen3907\\NES_fpga_development\\software_development\\pi_code\\autoquartus{gameTitle}.sof@2"
+cliCommand = fr"quartus_pgm -c 'DE-SoC [USB-0]' -m JTAG -o p;{game_path}"
 # print(cliCommand)
 os.system(cliCommand)
