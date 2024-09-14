@@ -8,7 +8,8 @@ log:
     $ September 5 2024, Steven: Initial creation
     $ September 9 2024, Kieran: Update to enable Axes Reading.
     $ September 10 2024, Kieran: Enabled UART on Raspberry Pi. Able to read controller buttons. 
-    $ September 10 2024, Steven: changed UART descriptor file, translated button presses into proper bit strings
+    $ September 10 2024, Steven: Changed UART descriptor file, translated button presses into proper bit strings
+    $ September 12 2024, Steven: Added functionality to detect when a button is being held down
  */
 
 #include <iostream>
@@ -25,6 +26,7 @@ log:
 #include <time.h>
 #include <errno.h>
 #include <string.h>
+#include <math.h>
 
 // Directory of file descriptor
 #define USB_DEVICE_DIRECTORY "/dev/input/js0"
@@ -117,7 +119,8 @@ int main()
 
     // Setup UART
     int8_t uart_fd = setup_uart(UART_DEVICE);
-    if (uart_fd < 0) {
+    if (uart_fd < 0) 
+    {
         close(usb_device);
         return -1;
     }
@@ -126,8 +129,9 @@ int main()
     fd_set readfds;
     struct timeval tv;
    // time_t last_check = 0;
-
-    while(1) {
+   uint8_t controller_byte[8] = {0}; 
+    while(1)
+     {
         FD_ZERO(&readfds);
         FD_SET(usb_device, &readfds);
 
@@ -155,44 +159,88 @@ int main()
                  *Right: axis 0, pressed = 32767, released = 0  
                  */
                 //craft string to send over UART
-                uint8_t controller_byte = 0;
                 if(usb_device_event.type == JS_EVENT_BUTTON)
                 {
-                    //A button pressed
-                    if((uint8_t)usb_device_event.number == 1 && (uint8_t)usb_device_event.value == 1)
+                    //A button
+                    if((uint8_t)usb_device_event.number == 1)
                     {
-                        controller_byte = controller_byte | A_BITS;
+                        //button pressed
+                        if((uint8_t)usb_device_event.value == 1)
+                        {
+                            controller_byte[0] = 1;
+                        }
+                        //button released
+                        else
+                        {
+                            controller_byte[0] = 0;
+                        }
                     }
-                    //B button pressed
-                    if((uint8_t)usb_device_event.number == 2 && (uint8_t)usb_device_event.value == 1)
+                    //B button
+                    if((uint8_t)usb_device_event.number == 2)
                     {
-                         controller_byte = controller_byte | B_BITS;
+                         //button pressed
+                        if((uint8_t)usb_device_event.value == 1)
+                        {
+                            controller_byte[1] = 1;
+                        }
+                        //button released
+                        else
+                        {
+                            controller_byte[1] = 0;
+                        }
                     }
-                    //select button pressed
-                    if((uint8_t)usb_device_event.number == 8 && (uint8_t)usb_device_event.value == 1)
+                    //select button
+                    if((uint8_t)usb_device_event.number == 8)
                     {
-                         controller_byte = controller_byte | SELECT_BITS;
+                         //button pressed
+                        if((uint8_t)usb_device_event.value == 1)
+                        {
+                            controller_byte[2] = 1;
+                        }
+                        //button released
+                        else
+                        {
+                            controller_byte[2] = 0;
+                        }
                     }
-                    //start button pressed
-                    if((uint8_t)usb_device_event.number == 9 && (uint8_t)usb_device_event.value == 1)
+                    //start button 
+                    if((uint8_t)usb_device_event.number == 9)
                     {
-                         controller_byte = controller_byte | START_BITS;
+                          //button pressed
+                        if((uint8_t)usb_device_event.value == 1)
+                        {
+                            controller_byte[3] = 1;
+                        }
+                        //button released
+                        else
+                        {
+                            controller_byte[3] = 0;
+                        }
                     }
                 }
                 if(usb_device_event.type == JS_EVENT_AXIS)
-                {
-                    //up or down button pressed
+               {
+                    //up or down button
                     if((uint8_t)usb_device_event.number == 1)
                     {
-                        //up button pressed
+                        //up button
                         if((int16_t)usb_device_event.value == -32767)
                         {
-                              controller_byte = controller_byte | UP_BITS;
+                              controller_byte[4] = 1;
                         }
-                        //down button pressed
+                        else
+                        {
+                            controller_byte[4] = 0;
+                        }
+                        //down button
                         if((int16_t)usb_device_event.value == 32767)
                         {
-                             controller_byte = controller_byte | DOWN_BITS;
+                             controller_byte[5] = 1;
+                        }
+                        //neither buttons being pressed
+                        else
+                        {
+                            controller_byte[5] = 0;
                         }
                     }
                     //left or right button pressed
@@ -201,50 +249,55 @@ int main()
                         //left button pressed
                         if((int16_t)usb_device_event.value == -32767)
                         {
-                              controller_byte = controller_byte | LEFT_BITS;
+                              controller_byte[6] = 1;
+                        }
+                        else
+                        {
+                            controller_byte[6] = 0;
                         }
                         //right button pressed
                         if((int16_t)usb_device_event.value == 32767)
                         {
-                             controller_byte = controller_byte | RIGHT_BITS;
+                             controller_byte[7] = 1;
+                        }
+                        //neither buttons being pressed
+                        else
+                        {
+                            controller_byte[7] = 0;
                         }
                     }
                 }
-                //len = snprintf(controller_byte, sizeof(controller_byte), controller_byte);
-                if (write(uart_fd, &controller_byte, sizeof(controller_byte)) != sizeof(controller_byte)) 
+                
+                //actually build the uart string
+                uint8_t uartstring = 0;
+                for(uint8_t i =0; i <8; i++)
+                {
+                    if(controller_byte[i] == 1)
+                    {
+                        uartstring = uartstring + pow((double_t)2,(double_t)i);
+                    }
+                }
+                //display outputs to screen
+                switch (usb_device_event.type) 
+                {
+                    case JS_EVENT_BUTTON:
+                        std::cout << "Button " << (int)usb_device_event.number << " " << (usb_device_event.value ? "pressed" : "released") << std::endl;
+                        break;
+                    case JS_EVENT_AXIS:
+                        std::cout << "Axis " << (int)usb_device_event.number << " at position " << usb_device_event.value << std::endl;
+                        break;
+                }
+                //actually transmit over UART
+                if (write(uart_fd, &uartstring, sizeof(uartstring)) != sizeof(uartstring)) 
                 {
                             std::cerr << "UART write error: " << strerror(errno) << std::endl;
                 } 
                 else 
                 {
-                            std::cout << "UART sent: " << std::to_string(controller_byte) << std::endl;
+                            std::cout << "UART sent: " << std::to_string(uartstring) << std::endl;
                 }
-                /*
-                switch (usb_device_event.type) {
-                    case JS_EVENT_BUTTON:
-                        std::cout << "Button " << (int)usb_device_event.number << " " 
-                                  << (usb_device_event.value ? "pressed" : "released") << std::endl;
-                        // Send over UART
-                        len = snprintf(buffer, sizeof(buffer), "B%u:%d\n", usb_device_event.number, usb_device_event.value);
-                        if (write(uart_fd, buffer, len) != len) {
-                            std::cerr << "UART write error: " << strerror(errno) << std::endl;
-                        } else {
-                            std::cout << "UART sent: " << buffer;
-                        }
-                        break;
-                    case JS_EVENT_AXIS:
-                        std::cout << "Axis " << (int)usb_device_event.number << " at position " 
-                                  << usb_device_event.value << std::endl;
-                        // Send over UART
-                        len = snprintf(buffer, sizeof(buffer), "A%u:%d\n", usb_device_event.number, usb_device_event.value);
-                        if (write(uart_fd, buffer, len) != len) {
-                            std::cerr << "UART write error: " << strerror(errno) << std::endl;
-                        } else {
-                            std::cout << "UART sent: " << buffer;
-                        }
-                        break;
-                }
-                */
+                
+                
             }
         } 
         else if (ret == 0) 
