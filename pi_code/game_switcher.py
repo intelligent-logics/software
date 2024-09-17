@@ -1,9 +1,17 @@
+# To check which USB port the DE10-nano is plugged into, run:
+# /home/jonas/intelFPGA_lite/20.1/quartus/bin/quartus_pgm --auto
+#
+# Should be something like:
+# 
+# 1) DE-SoC [3-1]
+
 import os
 import subprocess
 import curses
 
-QPATH = "/home/jonas/intelFPGA_lite/20.1/quartus/bin"
+QUARTUSPATH = "/home/jonas/intelFPGA_lite/20.1/quartus/bin"
 GAMEPATH = "/home/jonas/CODE/NES_Games/"
+DE10NANOUSBPORT = "DE-SoC [3-1]"
 
 games_list = os.listdir(GAMEPATH)
 
@@ -49,7 +57,7 @@ def string_selector(strings):
                 current_row +=1
             elif key in [curses.KEY_ENTER, ord('\n')]:
                 selected_game = strings[current_row]
-                cmd = f'sudo box64 {QPATH}/quartus_pgm -c "DE-SoC [3-1]" -m JTAG -o "P;{GAMEPATH}{selected_game}@2"'
+                cmd = f'sudo box64 {QUARTUSPATH}/quartus_pgm -c "{DE10NANOUSBPORT}" -m JTAG -o "P;{GAMEPATH}{selected_game}@2"'
                 # subprocess.run(cmd, stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 os.system(cmd + "/dev/null 2>&1")
 
