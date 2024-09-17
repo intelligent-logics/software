@@ -1,7 +1,7 @@
 //usbtouart.cpp
-/* Author(s): Steven, Kieran
+/* Author(s): Steven Miller, Kieran Abesamis, Jonas Wood
 Date created: September 5 2024
-Date updated: September 10 2024
+Date updated: September 17 2024
 Purpose: Allows inputs from USB controller(s) and sends out over UART
 Notes: USB devices are accessed in Linux using file descriptors, which are just files themselves. Assisted by Claude.ai to help understand and organize code
 log:
@@ -10,6 +10,7 @@ log:
     $ September 10 2024, Kieran: Enabled UART on Raspberry Pi. Able to read controller buttons. 
     $ September 10 2024, Steven: Changed UART descriptor file, translated button presses into proper bit strings
     $ September 12 2024, Steven: Added functionality to detect when a button is being held down
+    $ September 17, 2024, Jonas: Configured to work on RPI 5, edited makefile
  */
 
 #include <iostream>
@@ -30,7 +31,14 @@ log:
 
 // Directory of file descriptor
 #define USB_DEVICE_DIRECTORY "/dev/input/js0"
-#define UART_DEVICE "/dev/ttyAMA0" 
+
+// FOR RPI 3B+ w/16gb SD card RPI OS (plug controller into top leftmost USB port):
+#define UART_DEVICE "/dev/ttyAMA10"
+
+/*
+// FOR RPI 5 w/128gb SD card RPI OS (jonas's RPI) (plug controller into top leftmost USB port):
+#define UART_DEVICE "/dev/ttyAMA10"
+*/
 #define BAUDRATE B115200
 #define A_BITS      0b00000001
 #define B_BITS      0b00000010
