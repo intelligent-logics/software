@@ -1,3 +1,13 @@
+# game_switcher.py
+# Author(s): Jonas Wood, Patrick Lehman
+# Date created: September 13 2024
+# Date updated: September 17 2024
+# Purpose: Uses Quartus programmer to reset & flash DE10-nano Cyclone V FPGA with Sof files  (games/ROMs for this use-case)
+# Notes: Quartus programmer communicates using JTAG to DE10-nano over USB. Assisted by Claude.ai to help understand and organize code
+# log:
+#     $ September 13 2024, Jonas & Patrick: Initial creation
+#     $ September 17 2024, Jonas: Added comments for checking which USB port DE10-nano is plugged into via JTAG
+
 # To check which USB port the DE10-nano is plugged into, run:
 # /home/jonas/intelFPGA_lite/20.1/quartus/bin/quartus_pgm --auto
 #
