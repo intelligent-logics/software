@@ -27,8 +27,9 @@ crt0.o: crt0.s Alpha.chr
 $(NAME).o: $(NAME).s
 	ca65 $(NAME).s -g
 
+#original line: cc65 -Oirs $(NAME).c --add-source
 $(NAME).s: $(NAME).c
-	cc65 -Oirs $(NAME).c --add-source
+	cc65 -t nes $(NAME).c --add-source
 
 clean:
 	rm $(NAME).nes

@@ -23,14 +23,18 @@
 	.import		_rand8
 	.import		_vram_adr
 	.import		_vram_put
-	.import		_clear_vram_buffer
 	.import		_get_pad_new
-	.export		_p2
-	.export		_p2val
-	.export		_p2low
-	.export		_p2high
+	.import		_get_cpu_status
 	.export		_pad1
 	.export		_pad1Next
+	.export		_accumulator
+	.export		_x
+	.export		_p
+	.export		_p_temp
+	.export		_mouse_speed
+	.export		_temp
+	.export		_flags
+	.export		_albert_palette
 	.export		_palSprites
 	.export		_palette
 	.export		_i
@@ -39,26 +43,52 @@
 	.export		_menuIndexH
 	.export		_menuIndexV
 	.export		_page
-	.export		_menupointer
-	.export		_menu
 	.export		_cursorX
 	.export		_cursorY
+	.export		_cpu_status
+	.export		_can_jump
+	.export		_mario_vel_y
+	.export		_mario_pos_y
+	.export		_eval_pos
 	.export		_put_str
-	.export		_draw_bg_menu
+	.export		_draw_cursor_data
+	.export		_draw_accumulator
+	.export		_draw_cpu_status
+	.export		_draw_albert
+	.export		_draw_mario
+	.export		_update_mario
 	.export		_handleMenuInput
+	.export		_hover
 	.export		_main
 
 .segment	"DATA"
 
-_p2val:
-	.byte	$00
-_p2low:
-	.byte	$00
-_p2high:
-	.byte	$00
 _pad1:
 	.byte	$00
 _pad1Next:
+	.byte	$00
+_accumulator:
+	.word	$0000
+_x:
+	.byte	$00
+_p:
+	.byte	$00
+_p_temp:
+	.byte	$00
+_mouse_speed:
+	.byte	$02
+_temp:
+	.byte	$00
+_flags:
+	.byte	$4E
+	.byte	$56
+	.byte	$31
+	.byte	$42
+	.byte	$44
+	.byte	$49
+	.byte	$5A
+	.byte	$43
+_albert_palette:
 	.byte	$00
 _j:
 	.byte	$00
@@ -70,86 +100,30 @@ _menuIndexV:
 	.byte	$00
 _page:
 	.byte	$00
-_menupointer:
-	.word	$030C
-_menu:
-	.byte	$53,$2E,$20,$4D,$41,$52,$49,$4F,$20,$42,$52,$4F,$53,$00
-	.res	2,$00
-	.byte	$53,$2E,$20,$4D,$41,$52,$49,$4F,$20,$42,$52,$4F,$53,$20,$32,$00
-	.byte	$53,$2E,$20,$4D,$41,$52,$49,$4F,$20,$42,$52,$4F,$53,$20,$33,$00
-	.byte	$44,$4F,$4E,$4B,$45,$59,$20,$4B,$4F,$4E,$47,$00
-	.res	4,$00
-	.byte	$44,$4F,$4E,$4B,$45,$59,$20,$4B,$4F,$4E,$47,$20,$32,$00
-	.res	2,$00
-	.byte	$4D,$45,$47,$41,$20,$4D,$41,$4E,$00
-	.res	7,$00
-	.byte	$4D,$45,$47,$41,$20,$4D,$41,$4E,$20,$32,$00
-	.res	5,$00
-	.byte	$4D,$45,$47,$41,$20,$4D,$41,$4E,$20,$33,$00
-	.res	5,$00
-	.byte	$4D,$45,$47,$41,$20,$4D,$41,$4E,$20,$34,$00
-	.res	5,$00
-	.byte	$4D,$45,$47,$41,$20,$4D,$41,$4E,$20,$35,$00
-	.res	5,$00
-	.byte	$4D,$45,$47,$41,$20,$4D,$41,$4E,$20,$36,$00
-	.res	5,$00
-	.byte	$4C,$2E,$20,$4F,$46,$20,$5A,$45,$4C,$44,$41,$00
-	.res	4,$00
-	.byte	$4C,$2E,$20,$4F,$46,$20,$5A,$45,$4C,$44,$41,$20,$32,$00
-	.res	2,$00
-	.byte	$4D,$54,$27,$53,$20,$50,$55,$4E,$43,$48,$20,$4F,$55,$54,$00
-	.res	1,$00
-	.byte	$43,$41,$53,$54,$4C,$45,$56,$41,$4E,$49,$41,$00
-	.res	4,$00
-	.byte	$43,$41,$53,$54,$4C,$45,$56,$41,$4E,$49,$41,$20,$32,$00
-	.res	2,$00
-	.byte	$43,$41,$53,$54,$4C,$45,$56,$41,$4E,$49,$41,$20,$33,$00
-	.res	2,$00
-	.byte	$4D,$45,$54,$52,$4F,$49,$44,$00
-	.res	8,$00
-	.byte	$46,$49,$4E,$41,$4C,$20,$46,$41,$4E,$54,$41,$53,$59,$00
-	.res	2,$00
-	.byte	$4B,$49,$44,$20,$49,$43,$41,$52,$55,$53,$00
-	.res	5,$00
-	.byte	$42,$41,$54,$54,$4C,$45,$54,$4F,$41,$44,$53,$00
-	.res	4,$00
-	.byte	$54,$45,$54,$52,$49,$53,$00
-	.res	9,$00
-	.byte	$47,$48,$4F,$53,$54,$53,$20,$26,$20,$47,$42,$4C,$4E,$53,$00
-	.res	1,$00
-	.byte	$49,$43,$45,$20,$43,$4C,$49,$4D,$42,$45,$52,$00
-	.res	4,$00
-	.byte	$4D,$41,$52,$49,$4F,$20,$42,$52,$4F,$53,$00
-	.res	5,$00
-	.byte	$54,$4E,$4D,$54,$00
-	.res	11,$00
-	.byte	$44,$55,$43,$4B,$20,$48,$55,$4E,$54,$00
-	.res	6,$00
-	.byte	$43,$4F,$4E,$54,$52,$41,$00
-	.res	9,$00
-	.byte	$43,$48,$49,$50,$20,$4E,$20,$44,$41,$4C,$45,$00
-	.res	4,$00
-	.byte	$44,$52,$20,$4D,$41,$52,$49,$4F,$00
-	.res	7,$00
-	.byte	$4B,$49,$52,$42,$59,$27,$53,$20,$41,$44,$56,$00
-	.res	4,$00
-	.res	16,$00
 _cursorX:
-	.byte	$00
+	.byte	$80
 _cursorY:
-	.byte	$37
+	.byte	$78
+_cpu_status:
+	.byte	$00
+_can_jump:
+	.byte	$00
+_mario_vel_y:
+	.byte	$00
+_mario_pos_y:
+	.byte	$78
 
 .segment	"RODATA"
 
 _palSprites:
 	.byte	$0F
-	.byte	$15
+	.byte	$09
 	.byte	$26
 	.byte	$11
 	.byte	$0F
-	.byte	$11
-	.byte	$21
-	.byte	$15
+	.byte	$27
+	.byte	$18
+	.byte	$05
 	.byte	$0F
 	.byte	$15
 	.byte	$25
@@ -175,27 +149,37 @@ _palette:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-S0022:
-	.byte	$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20,$20
-	.byte	$00
-S0021	:=	S0022+0
-S0024:
-	.byte	$56,$49,$44,$45,$4F,$20,$4D,$4F,$44,$45,$3A,$00
-S0023:
-	.byte	$47,$4F,$20,$47,$41,$54,$4F,$52,$53,$21,$00
-S0027:
-	.byte	$49,$4E,$44,$45,$58,$3A,$20,$00
-S0028:
-	.byte	$50,$41,$47,$45,$3A,$20,$00
-S0025:
+S0002:
+	.byte	$4D,$75,$73,$65,$75,$6D,$20,$45,$6D,$75,$6C,$61,$74,$69,$6F,$6E
+	.byte	$20,$53,$79,$73,$74,$65,$6D,$73,$00
+S0004:
+	.byte	$41,$75,$74,$68,$6F,$72,$3A,$20,$42,$65,$74,$6F,$20,$50,$65,$72
+	.byte	$65,$7A,$00
+S000B:
+	.byte	$20,$20,$20,$20,$20,$20,$20,$2A,$20,$2F,$20,$43,$00
+S0009:
+	.byte	$20,$20,$20,$35,$20,$36,$20,$37,$20,$38,$20,$39,$00
+S0008:
+	.byte	$58,$3A,$20,$30,$20,$31,$20,$32,$20,$33,$20,$34,$00
+S0003:
+	.byte	$56,$69,$64,$65,$6F,$20,$6D,$6F,$64,$65,$3A,$00
+S000A:
+	.byte	$41,$20,$20,$20,$58,$3A,$20,$2B,$20,$2D,$00
+S000D:
+	.byte	$50,$4F,$53,$20,$58,$3A,$20,$00
+S000E:
+	.byte	$50,$4F,$53,$20,$59,$3A,$20,$00
+S0005:
 	.byte	$4E,$54,$53,$43,$00
-S0026:
+S0006:
 	.byte	$50,$41,$4C,$00
+S000C:
+	.byte	$50,$3A,$20,$00
+S0007:
+	.byte	$41,$3A,$20,$00
 
 .segment	"BSS"
 
-_p2:
-	.res	2,$00
 _ball_x:
 	.res	8,$00
 _ball_y:
@@ -206,6 +190,624 @@ _ball_dy:
 	.res	8,$00
 _i:
 	.res	1,$00
+
+; ---------------------------------------------------------------
+; unsigned char __near__ eval_pos (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_eval_pos: near
+
+.segment	"CODE"
+
+;
+; if((cursorX > 30 && cursorX < 101) && (cursorY > 134 && cursorY < 150)){
+;
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$1F
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0003
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$65
+	jsr     boolult
+	jne     L0004
+L0003:	ldx     #$00
+	lda     #$00
+	jeq     L0005
+L0004:	ldx     #$00
+	lda     #$01
+L0005:	jeq     L0006
+	ldx     #$00
+	lda     _cursorY
+	cmp     #$87
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0007
+	ldx     #$00
+	lda     _cursorY
+	cmp     #$96
+	jsr     boolult
+	jne     L0008
+L0007:	ldx     #$00
+	lda     #$00
+	jeq     L0009
+L0008:	ldx     #$00
+	lda     #$01
+L0009:	jne     L000A
+L0006:	ldx     #$00
+	lda     #$00
+	jeq     L000B
+L000A:	ldx     #$00
+	lda     #$01
+L000B:	jeq     L0021
+;
+; if(cursorY < 143){
+;
+	ldx     #$00
+	lda     _cursorY
+	cmp     #$8F
+	jsr     boolult
+	jeq     L000C
+;
+; if(cursorX > 30 && cursorX < 38) return (unsigned char)0;
+;
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$1F
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L000E
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$26
+	jsr     boolult
+	jne     L000F
+L000E:	ldx     #$00
+	lda     #$00
+	jeq     L0010
+L000F:	ldx     #$00
+	lda     #$01
+L0010:	jeq     L000D
+	ldx     #$00
+	lda     #$00
+	jmp     L006A
+;
+; if(cursorX > 46 && cursorX < 54) return (unsigned char)1;
+;
+L000D:	ldx     #$00
+	lda     _cursorX
+	cmp     #$2F
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0012
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$36
+	jsr     boolult
+	jne     L0013
+L0012:	ldx     #$00
+	lda     #$00
+	jeq     L0014
+L0013:	ldx     #$00
+	lda     #$01
+L0014:	jeq     L0011
+	ldx     #$00
+	lda     #$01
+	jmp     L006A
+;
+; if(cursorX > 62 && cursorX < 70) return (unsigned char)2;
+;
+L0011:	ldx     #$00
+	lda     _cursorX
+	cmp     #$3F
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0016
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$46
+	jsr     boolult
+	jne     L0017
+L0016:	ldx     #$00
+	lda     #$00
+	jeq     L0018
+L0017:	ldx     #$00
+	lda     #$01
+L0018:	jeq     L0015
+	ldx     #$00
+	lda     #$02
+	jmp     L006A
+;
+; if(cursorX > 78 && cursorX < 86) return (unsigned char)3;
+;
+L0015:	ldx     #$00
+	lda     _cursorX
+	cmp     #$4F
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L001A
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$56
+	jsr     boolult
+	jne     L001B
+L001A:	ldx     #$00
+	lda     #$00
+	jeq     L001C
+L001B:	ldx     #$00
+	lda     #$01
+L001C:	jeq     L0019
+	ldx     #$00
+	lda     #$03
+	jmp     L006A
+;
+; if(cursorX > 94 && cursorX < 102) return (unsigned char)4;
+;
+L0019:	ldx     #$00
+	lda     _cursorX
+	cmp     #$5F
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L001E
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$66
+	jsr     boolult
+	jne     L001F
+L001E:	ldx     #$00
+	lda     #$00
+	jeq     L0020
+L001F:	ldx     #$00
+	lda     #$01
+L0020:	jeq     L001D
+	ldx     #$00
+	lda     #$04
+	jmp     L006A
+;
+; return 255;
+;
+L001D:	ldx     #$00
+	lda     #$FF
+	jmp     L006A
+;
+; else{
+;
+	jmp     L0021
+;
+; if(cursorX > 30 && cursorX < 38) return (unsigned char)5;
+;
+L000C:	ldx     #$00
+	lda     _cursorX
+	cmp     #$1F
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0023
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$26
+	jsr     boolult
+	jne     L0024
+L0023:	ldx     #$00
+	lda     #$00
+	jeq     L0025
+L0024:	ldx     #$00
+	lda     #$01
+L0025:	jeq     L0022
+	ldx     #$00
+	lda     #$05
+	jmp     L006A
+;
+; if(cursorX > 46 && cursorX < 54) return (unsigned char)6;
+;
+L0022:	ldx     #$00
+	lda     _cursorX
+	cmp     #$2F
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0027
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$36
+	jsr     boolult
+	jne     L0028
+L0027:	ldx     #$00
+	lda     #$00
+	jeq     L0029
+L0028:	ldx     #$00
+	lda     #$01
+L0029:	jeq     L0026
+	ldx     #$00
+	lda     #$06
+	jmp     L006A
+;
+; if(cursorX > 62 && cursorX < 70) return (unsigned char)7;
+;
+L0026:	ldx     #$00
+	lda     _cursorX
+	cmp     #$3F
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L002B
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$46
+	jsr     boolult
+	jne     L002C
+L002B:	ldx     #$00
+	lda     #$00
+	jeq     L002D
+L002C:	ldx     #$00
+	lda     #$01
+L002D:	jeq     L002A
+	ldx     #$00
+	lda     #$07
+	jmp     L006A
+;
+; if(cursorX > 78 && cursorX < 86) return (unsigned char)8;
+;
+L002A:	ldx     #$00
+	lda     _cursorX
+	cmp     #$4F
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L002F
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$56
+	jsr     boolult
+	jne     L0030
+L002F:	ldx     #$00
+	lda     #$00
+	jeq     L0031
+L0030:	ldx     #$00
+	lda     #$01
+L0031:	jeq     L002E
+	ldx     #$00
+	lda     #$08
+	jmp     L006A
+;
+; if(cursorX > 94 && cursorX < 102) return (unsigned char)9;
+;
+L002E:	ldx     #$00
+	lda     _cursorX
+	cmp     #$5F
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0033
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$66
+	jsr     boolult
+	jne     L0034
+L0033:	ldx     #$00
+	lda     #$00
+	jeq     L0035
+L0034:	ldx     #$00
+	lda     #$01
+L0035:	jeq     L0032
+	ldx     #$00
+	lda     #$09
+	jmp     L006A
+;
+; return 255;
+;
+L0032:	ldx     #$00
+	lda     #$FF
+	jmp     L006A
+;
+; if((cursorX > 63 && cursorX < 102) && (cursorY > 158 && cursorY < 174)){
+;
+L0021:	ldx     #$00
+	lda     _cursorX
+	cmp     #$40
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0037
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$66
+	jsr     boolult
+	jne     L0038
+L0037:	ldx     #$00
+	lda     #$00
+	jeq     L0039
+L0038:	ldx     #$00
+	lda     #$01
+L0039:	jeq     L003A
+	ldx     #$00
+	lda     _cursorY
+	cmp     #$9F
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L003B
+	ldx     #$00
+	lda     _cursorY
+	cmp     #$AE
+	jsr     boolult
+	jne     L003C
+L003B:	ldx     #$00
+	lda     #$00
+	jeq     L003D
+L003C:	ldx     #$00
+	lda     #$01
+L003D:	jne     L003E
+L003A:	ldx     #$00
+	lda     #$00
+	jeq     L003F
+L003E:	ldx     #$00
+	lda     #$01
+L003F:	jeq     L0049
+;
+; if(cursorY < 166){
+;
+	ldx     #$00
+	lda     _cursorY
+	cmp     #$A6
+	jsr     boolult
+	jeq     L0040
+;
+; if(cursorX > 63 && cursorX < 70) return (unsigned char) 0x0B;
+;
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$40
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0042
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$46
+	jsr     boolult
+	jne     L0043
+L0042:	ldx     #$00
+	lda     #$00
+	jeq     L0044
+L0043:	ldx     #$00
+	lda     #$01
+L0044:	jeq     L0041
+	ldx     #$00
+	lda     #$0B
+	jmp     L006A
+;
+; if(cursorX > 79 && cursorX < 87) return (unsigned char) 0x0D;
+;
+L0041:	ldx     #$00
+	lda     _cursorX
+	cmp     #$50
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0046
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$57
+	jsr     boolult
+	jne     L0047
+L0046:	ldx     #$00
+	lda     #$00
+	jeq     L0048
+L0047:	ldx     #$00
+	lda     #$01
+L0048:	jeq     L0045
+	ldx     #$00
+	lda     #$0D
+	jmp     L006A
+;
+; return 255;
+;
+L0045:	ldx     #$00
+	lda     #$FF
+	jmp     L006A
+;
+; else{
+;
+	jmp     L0049
+;
+; if(cursorX > 63 && cursorX < 70) return 0x0A;
+;
+L0040:	ldx     #$00
+	lda     _cursorX
+	cmp     #$40
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L004B
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$46
+	jsr     boolult
+	jne     L004C
+L004B:	ldx     #$00
+	lda     #$00
+	jeq     L004D
+L004C:	ldx     #$00
+	lda     #$01
+L004D:	jeq     L004A
+	ldx     #$00
+	lda     #$0A
+	jmp     L006A
+;
+; if(cursorX > 79 && cursorX < 87) return 0x0F;
+;
+L004A:	ldx     #$00
+	lda     _cursorX
+	cmp     #$50
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L004F
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$57
+	jsr     boolult
+	jne     L0050
+L004F:	ldx     #$00
+	lda     #$00
+	jeq     L0051
+L0050:	ldx     #$00
+	lda     #$01
+L0051:	jeq     L004E
+	ldx     #$00
+	lda     #$0F
+	jmp     L006A
+;
+; if(cursorX > 95 && cursorX < 104) return 'C';
+;
+L004E:	ldx     #$00
+	lda     _cursorX
+	cmp     #$60
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0053
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$68
+	jsr     boolult
+	jne     L0054
+L0053:	ldx     #$00
+	lda     #$00
+	jeq     L0055
+L0054:	ldx     #$00
+	lda     #$01
+L0055:	jeq     L0052
+	ldx     #$00
+	lda     #$43
+	jmp     L006A
+;
+; return 255;
+;
+L0052:	ldx     #$00
+	lda     #$FF
+	jmp     L006A
+;
+; if((cursorX > 207 && cursorX < 255) && (cursorY > 15 && cursorY < 73)) return 32;
+;
+L0049:	ldx     #$00
+	lda     _cursorX
+	cmp     #$D0
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0057
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$FF
+	jsr     boolult
+	jne     L0058
+L0057:	ldx     #$00
+	lda     #$00
+	jeq     L0059
+L0058:	ldx     #$00
+	lda     #$01
+L0059:	jeq     L005A
+	ldx     #$00
+	lda     _cursorY
+	cmp     #$10
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L005B
+	ldx     #$00
+	lda     _cursorY
+	cmp     #$49
+	jsr     boolult
+	jne     L005C
+L005B:	ldx     #$00
+	lda     #$00
+	jeq     L005D
+L005C:	ldx     #$00
+	lda     #$01
+L005D:	jne     L005E
+L005A:	ldx     #$00
+	lda     #$00
+	jeq     L005F
+L005E:	ldx     #$00
+	lda     #$01
+L005F:	jeq     L0056
+	ldx     #$00
+	lda     #$20
+	jmp     L006A
+;
+; if((cursorX > 141 && cursorX < 155) && (cursorY > 119 && cursorY < 136)) return 33;
+;
+L0056:	ldx     #$00
+	lda     _cursorX
+	cmp     #$8E
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0061
+	ldx     #$00
+	lda     _cursorX
+	cmp     #$9B
+	jsr     boolult
+	jne     L0062
+L0061:	ldx     #$00
+	lda     #$00
+	jeq     L0063
+L0062:	ldx     #$00
+	lda     #$01
+L0063:	jeq     L0064
+	ldx     #$00
+	lda     _cursorY
+	cmp     #$78
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0065
+	ldx     #$00
+	lda     _cursorY
+	cmp     #$88
+	jsr     boolult
+	jne     L0066
+L0065:	ldx     #$00
+	lda     #$00
+	jeq     L0067
+L0066:	ldx     #$00
+	lda     #$01
+L0067:	jne     L0068
+L0064:	ldx     #$00
+	lda     #$00
+	jeq     L0069
+L0068:	ldx     #$00
+	lda     #$01
+L0069:	jeq     L0060
+	ldx     #$00
+	lda     #$21
+	jmp     L006A
+;
+; else return (unsigned char)255;
+;
+	jmp     L006A
+L0060:	ldx     #$00
+	lda     #$FF
+	jmp     L006A
+;
+; }
+;
+L006A:	rts
+
+.endproc
 
 ; ---------------------------------------------------------------
 ; void __near__ put_str (unsigned int adr, const char *str)
@@ -225,257 +827,904 @@ _i:
 ; vram_adr(adr);
 ;
 	ldy     #$03
-	lda     (sp),y
-	tax
-	dey
-	lda     (sp),y
+	jsr     ldaxysp
 	jsr     _vram_adr
+;
+; while(1){
+;
+	jmp     L0004
 ;
 ; if(!*str)break;
 ;
 L0002:	ldy     #$01
-	lda     (sp),y
-	sta     ptr1+1
-	dey
-	lda     (sp),y
-	sta     ptr1
-	lda     (ptr1),y
-	beq     L0003
+	jsr     ldaxysp
+	ldy     #$00
+	jsr     ldauidx
+	jsr     bnega
+	jeq     L0005
+	jmp     L0003
 ;
 ; vram_put((*str++));
 ;
-	iny
-	lda     (sp),y
-	sta     ptr1+1
-	dey
-	lda     (sp),y
-	sta     ptr1
-	lda     (ptr1),y
+L0005:	ldy     #$01
+	jsr     ldaxysp
+	ldy     #$00
+	jsr     ldauidx
 	pha
+	ldy     #$00
 	ldx     #$00
 	lda     #$01
-	jsr     addeq0sp
+	jsr     addeqysp
 	pla
 	jsr     _vram_put
 ;
 ; while(1){
 ;
-	jmp     L0002
+L0004:	jmp     L0002
 ;
 ; }
 ;
-L0003:	jmp     incsp4
+L0003:	jsr     incsp4
+	rts
 
 .endproc
 
 ; ---------------------------------------------------------------
-; void __near__ draw_bg_menu (const unsigned char page)
+; void __near__ draw_cursor_data (void)
 ; ---------------------------------------------------------------
 
 .segment	"CODE"
 
-.proc	_draw_bg_menu: near
+.proc	_draw_cursor_data: near
 
 .segment	"CODE"
 
 ;
-; void draw_bg_menu(const unsigned char page){
+; oam_spr(80, 215,((cursorX % 10) + 0x30), 0x0);
 ;
+	ldx     #$00
+	lda     #$50
 	jsr     pusha
-;
-; ppu_off();
-;
-	jsr     _ppu_off
-;
-; for(i = 0; i < 4; ++i){
-;
+	ldx     #$00
+	lda     #$D7
+	jsr     pusha
+	ldx     #$00
+	lda     _cursorX
+	jsr     pushax
+	ldx     #$00
+	lda     #$0A
+	jsr     tosumodax
+	ldy     #$30
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
 	lda     #$00
-	sta     _i
-L001B:	lda     _i
-	cmp     #$04
-	bcs     L001C
+	jsr     _oam_spr
 ;
-; put_str(NTADR_A(1, i * 2 + 7), "                ");
+; oam_spr(72, 215, (((cursorX / 10) % 10) + 0x30), 0x0);
 ;
 	ldx     #$00
-	lda     _i
-	asl     a
-	bcc     L0015
-	inx
-	clc
-L0015:	adc     #$07
-	bcc     L0006
-	inx
-L0006:	jsr     aslax4
-	stx     tmp1
-	asl     a
-	rol     tmp1
-	ora     #$01
-	pha
-	lda     tmp1
-	ora     #$20
-	tax
-	pla
+	lda     #$48
+	jsr     pusha
+	ldx     #$00
+	lda     #$D7
+	jsr     pusha
+	ldx     #$00
+	lda     _cursorX
 	jsr     pushax
-	lda     #<(S0021)
-	ldx     #>(S0021)
-	jsr     _put_str
-;
-; put_str(NTADR_A(17, i *2 + 7), "                ");
-;
 	ldx     #$00
-	lda     _i
-	asl     a
-	bcc     L0016
-	inx
-	clc
-L0016:	adc     #$07
-	bcc     L0007
-	inx
-L0007:	jsr     aslax4
-	stx     tmp1
-	asl     a
-	rol     tmp1
-	ora     #$11
-	pha
-	lda     tmp1
-	ora     #$20
-	tax
-	pla
+	lda     #$0A
+	jsr     tosudivax
 	jsr     pushax
-	lda     #<(S0022)
-	ldx     #>(S0022)
-	jsr     _put_str
+	ldx     #$00
+	lda     #$0A
+	jsr     tosmodax
+	ldy     #$30
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$00
+	jsr     _oam_spr
 ;
-; for(i = 0; i < 4; ++i){
-;
-	inc     _i
-	jmp     L001B
-;
-; for(i = 0; i < 4; ++i){
-;
-L001C:	lda     #$00
-	sta     _i
-L001D:	lda     _i
-	cmp     #$04
-	jcs     L0009
-;
-; put_str(NTADR_A(1, i * 2 + 7), menu[(page * 8) + (i * 2)]);
+; oam_spr(64, 215, (((cursorX / 100) % 10) + 0x30), 0x0);
 ;
 	ldx     #$00
-	lda     _i
-	asl     a
-	bcc     L0017
-	inx
-	clc
-L0017:	adc     #$07
-	bcc     L000C
-	inx
-L000C:	jsr     aslax4
-	stx     tmp1
-	asl     a
-	rol     tmp1
-	ora     #$01
-	pha
-	lda     tmp1
-	ora     #$20
-	tax
-	pla
+	lda     #$40
+	jsr     pusha
+	ldx     #$00
+	lda     #$D7
+	jsr     pusha
+	ldx     #$00
+	lda     _cursorX
 	jsr     pushax
-	ldy     #$02
 	ldx     #$00
-	lda     (sp),y
-	jsr     shlax3
-	sta     ptr1
-	stx     ptr1+1
-	ldx     #$00
-	lda     _i
-	asl     a
-	bcc     L0018
-	inx
-	clc
-L0018:	adc     ptr1
-	pha
-	txa
-	adc     ptr1+1
-	tax
-	pla
-	jsr     aslax4
-	clc
-	adc     #<(_menu)
-	tay
-	txa
-	adc     #>(_menu)
-	tax
-	tya
-	jsr     _put_str
-;
-; put_str(NTADR_A(17, i *2 + 7), menu[(page * 8) + (i * 2) + 1]);
-;
-	ldx     #$00
-	lda     _i
-	asl     a
-	bcc     L0019
-	inx
-	clc
-L0019:	adc     #$07
-	bcc     L000D
-	inx
-L000D:	jsr     aslax4
-	stx     tmp1
-	asl     a
-	rol     tmp1
-	ora     #$11
-	pha
-	lda     tmp1
-	ora     #$20
-	tax
-	pla
+	lda     #$64
+	jsr     tosudivax
 	jsr     pushax
-	ldy     #$02
 	ldx     #$00
-	lda     (sp),y
-	jsr     shlax3
-	sta     ptr1
-	stx     ptr1+1
+	lda     #$0A
+	jsr     tosmodax
+	ldy     #$30
+	jsr     incaxy
 	ldx     #$00
-	lda     _i
-	asl     a
-	bcc     L001A
-	inx
-	clc
-L001A:	adc     ptr1
-	pha
-	txa
-	adc     ptr1+1
-	tax
-	pla
-	clc
-	adc     #$01
-	bcc     L000E
-	inx
-L000E:	jsr     aslax4
-	clc
-	adc     #<(_menu)
-	tay
-	txa
-	adc     #>(_menu)
-	tax
-	tya
-	jsr     _put_str
+	jsr     pusha
+	ldx     #$00
+	lda     #$00
+	jsr     _oam_spr
 ;
-; for(i = 0; i < 4; ++i){
+; oam_spr(80, 223,((cursorY % 10) + 0x30), 0x0);
 ;
-	inc     _i
-	jmp     L001D
+	ldx     #$00
+	lda     #$50
+	jsr     pusha
+	ldx     #$00
+	lda     #$DF
+	jsr     pusha
+	ldx     #$00
+	lda     _cursorY
+	jsr     pushax
+	ldx     #$00
+	lda     #$0A
+	jsr     tosumodax
+	ldy     #$30
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$00
+	jsr     _oam_spr
 ;
-; ppu_on_all(); 
+; oam_spr(72, 223, (((cursorY / 10) % 10) + 0x30), 0x0);
 ;
-L0009:	jsr     _ppu_on_all
+	ldx     #$00
+	lda     #$48
+	jsr     pusha
+	ldx     #$00
+	lda     #$DF
+	jsr     pusha
+	ldx     #$00
+	lda     _cursorY
+	jsr     pushax
+	ldx     #$00
+	lda     #$0A
+	jsr     tosudivax
+	jsr     pushax
+	ldx     #$00
+	lda     #$0A
+	jsr     tosmodax
+	ldy     #$30
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$00
+	jsr     _oam_spr
+;
+; oam_spr(64, 223, (((cursorY / 100) % 10) + 0x30), 0x0);
+;
+	ldx     #$00
+	lda     #$40
+	jsr     pusha
+	ldx     #$00
+	lda     #$DF
+	jsr     pusha
+	ldx     #$00
+	lda     _cursorY
+	jsr     pushax
+	ldx     #$00
+	lda     #$64
+	jsr     tosudivax
+	jsr     pushax
+	ldx     #$00
+	lda     #$0A
+	jsr     tosmodax
+	ldy     #$30
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$00
+	jsr     _oam_spr
 ;
 ; }
 ;
-	jmp     incsp1
+	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ draw_accumulator (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_draw_accumulator: near
+
+.segment	"CODE"
+
+;
+; unsigned char final_res = accumulator;
+;
+	ldx     #$00
+	lda     _accumulator
+	jsr     pusha
+;
+; if(accumulator & 128){
+;
+	lda     _accumulator
+	ldx     _accumulator+1
+	ldx     #$00
+	and     #$80
+	stx     tmp1
+	ora     tmp1
+	jeq     L0002
+;
+; oam_spr(23, 119,'-', 0x2);
+;
+	ldx     #$00
+	lda     #$17
+	jsr     pusha
+	ldx     #$00
+	lda     #$77
+	jsr     pusha
+	ldx     #$00
+	lda     #$2D
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; final_res = 255 - final_res;
+;
+	ldx     #$00
+	lda     #$FF
+	jsr     pushax
+	ldy     #$02
+	ldx     #$00
+	lda     (sp),y
+	jsr     tossubax
+	ldx     #$00
+	ldy     #$00
+	sta     (sp),y
+;
+; final_res++;
+;
+	ldy     #$00
+	ldx     #$00
+	clc
+	lda     #$01
+	adc     (sp),y
+	sta     (sp),y
+;
+; oam_spr(47, 119,((final_res % 10) + 0x30), 0x2);
+;
+L0002:	ldx     #$00
+	lda     #$2F
+	jsr     pusha
+	ldx     #$00
+	lda     #$77
+	jsr     pusha
+	ldy     #$02
+	ldx     #$00
+	lda     (sp),y
+	jsr     pushax
+	ldx     #$00
+	lda     #$0A
+	jsr     tosumodax
+	ldy     #$30
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; oam_spr(39, 119, (((final_res / 10) % 10) + 0x30), 0x2);
+;
+	ldx     #$00
+	lda     #$27
+	jsr     pusha
+	ldx     #$00
+	lda     #$77
+	jsr     pusha
+	ldy     #$02
+	ldx     #$00
+	lda     (sp),y
+	jsr     pushax
+	ldx     #$00
+	lda     #$0A
+	jsr     tosudivax
+	jsr     pushax
+	ldx     #$00
+	lda     #$0A
+	jsr     tosmodax
+	ldy     #$30
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; oam_spr(31, 119, (((final_res / 100) % 10) + 0x30), 0x2);
+;
+	ldx     #$00
+	lda     #$1F
+	jsr     pusha
+	ldx     #$00
+	lda     #$77
+	jsr     pusha
+	ldy     #$02
+	ldx     #$00
+	lda     (sp),y
+	jsr     pushax
+	ldx     #$00
+	lda     #$64
+	jsr     tosudivax
+	jsr     pushax
+	ldx     #$00
+	lda     #$0A
+	jsr     tosmodax
+	ldy     #$30
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; }
+;
+	jsr     incsp1
+	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ draw_cpu_status (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_draw_cpu_status: near
+
+.segment	"CODE"
+
+;
+; p_temp = p;
+;
+	ldx     #$00
+	lda     _p
+	sta     _p_temp
+;
+; for(i = 6; i != 2; --i){
+;
+	ldx     #$00
+	lda     #$06
+	sta     _i
+L0002:	ldx     #$00
+	lda     _i
+	cmp     #$02
+	jsr     boolne
+	jne     L0005
+	jmp     L0003
+;
+; temp = p_temp & 1;
+;
+L0005:	ldx     #$00
+	lda     _p_temp
+	ldx     #$00
+	and     #$01
+	ldx     #$00
+	sta     _temp
+;
+; if(temp){
+;
+	lda     _temp
+	jeq     L0008
+;
+; if(i > 3) oam_spr((88 - 16 * (i - 3)), 182, flags[7 - i], 0x2);
+;
+	ldx     #$00
+	lda     _i
+	cmp     #$04
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0007
+	ldx     #$00
+	lda     #$58
+	jsr     pushax
+	ldx     #$00
+	lda     _i
+	jsr     decax3
+	jsr     aslax4
+	jsr     tossubax
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$B6
+	jsr     pusha
+	ldx     #$00
+	lda     #$07
+	jsr     pushax
+	ldx     #$00
+	lda     _i
+	jsr     tossubax
+	clc
+	adc     #<(_flags)
+	tay
+	txa
+	adc     #>(_flags)
+	tax
+	tya
+	ldy     #$00
+	jsr     ldauidx
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; else  oam_spr((88 - 16 * (i + 3)), 190, flags[7 - i], 0x2);
+;
+	jmp     L0008
+L0007:	ldx     #$00
+	lda     #$58
+	jsr     pushax
+	ldx     #$00
+	lda     _i
+	jsr     incax3
+	jsr     aslax4
+	jsr     tossubax
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$BE
+	jsr     pusha
+	ldx     #$00
+	lda     #$07
+	jsr     pushax
+	ldx     #$00
+	lda     _i
+	jsr     tossubax
+	clc
+	adc     #<(_flags)
+	tay
+	txa
+	adc     #>(_flags)
+	tax
+	tya
+	ldy     #$00
+	jsr     ldauidx
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; p_temp >>= 1;
+;
+L0008:	ldx     #$00
+	lda     _p_temp
+	lsr     a
+	sta     _p_temp
+;
+; for(i = 6; i != 2; --i){
+;
+	ldx     #$00
+	dec     _i
+	lda     _i
+	jmp     L0002
+;
+; if(p_temp & 1) oam_spr(72, 190, flags[7], 0x2);
+;
+L0003:	ldx     #$00
+	lda     _p_temp
+	ldx     #$00
+	and     #$01
+	stx     tmp1
+	ora     tmp1
+	jeq     L0009
+	ldx     #$00
+	lda     #$48
+	jsr     pusha
+	ldx     #$00
+	lda     #$BE
+	jsr     pusha
+	ldx     #$00
+	lda     _flags+7
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; if(accumulator == 0) oam_spr(56, 190, flags[6], 0x2);
+;
+L0009:	lda     _accumulator
+	ldx     _accumulator+1
+	cpx     #$00
+	bne     L000B
+	cmp     #$00
+L000B:	jsr     booleq
+	jeq     L000A
+	ldx     #$00
+	lda     #$38
+	jsr     pusha
+	ldx     #$00
+	lda     #$BE
+	jsr     pusha
+	ldx     #$00
+	lda     _flags+6
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; if(accumulator & 128) oam_spr(24, 182, flags[0], 0x2);
+;
+L000A:	lda     _accumulator
+	ldx     _accumulator+1
+	ldx     #$00
+	and     #$80
+	stx     tmp1
+	ora     tmp1
+	jeq     L000C
+	ldx     #$00
+	lda     #$18
+	jsr     pusha
+	ldx     #$00
+	lda     #$B6
+	jsr     pusha
+	ldx     #$00
+	lda     _flags
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; }
+;
+L000C:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ draw_albert (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_draw_albert: near
+
+.segment	"CODE"
+
+;
+; for(i = 0; i != 7; ++i){
+;
+	ldx     #$00
+	lda     #$00
+	sta     _i
+L0002:	ldx     #$00
+	lda     _i
+	cmp     #$07
+	jsr     boolne
+	jne     L0005
+	jmp     L0003
+;
+; for(j = 1; j != 7; ++j){
+;
+L0005:	ldx     #$00
+	lda     #$01
+	sta     _j
+L0006:	ldx     #$00
+	lda     _j
+	cmp     #$07
+	jsr     boolne
+	jne     L0009
+	jmp     L0004
+;
+; oam_spr((200 + (8 * j)), 16 + (i << 3), (0x80 + j + (i << 4)), albert_palette);
+;
+L0009:	ldx     #$00
+	lda     _j
+	jsr     shlax3
+	ldy     #$C8
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     _i
+	jsr     aslax3
+	ldy     #$10
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     _j
+	ldy     #$80
+	jsr     incaxy
+	jsr     pushax
+	ldx     #$00
+	lda     _i
+	jsr     aslax4
+	jsr     tosaddax
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     _albert_palette
+	jsr     _oam_spr
+;
+; for(j = 1; j != 7; ++j){
+;
+	ldx     #$00
+	inc     _j
+	lda     _j
+	jmp     L0006
+;
+; for(i = 0; i != 7; ++i){
+;
+L0004:	ldx     #$00
+	inc     _i
+	lda     _i
+	jmp     L0002
+;
+; }
+;
+L0003:	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ draw_mario (unsigned char idle)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_draw_mario: near
+
+.segment	"CODE"
+
+;
+; void draw_mario(unsigned char idle){
+;
+	jsr     pusha
+;
+; if(idle){
+;
+	ldy     #$00
+	lda     (sp),y
+	jeq     L0002
+;
+; oam_spr(144, mario_pos_y, 0x88, 0x1);
+;
+	ldx     #$00
+	lda     #$90
+	jsr     pusha
+	ldx     #$00
+	lda     _mario_pos_y
+	jsr     pusha
+	ldx     #$00
+	lda     #$88
+	jsr     pusha
+	ldx     #$00
+	lda     #$01
+	jsr     _oam_spr
+;
+; oam_spr(152, mario_pos_y, 0x89, 0x1);
+;
+	ldx     #$00
+	lda     #$98
+	jsr     pusha
+	ldx     #$00
+	lda     _mario_pos_y
+	jsr     pusha
+	ldx     #$00
+	lda     #$89
+	jsr     pusha
+	ldx     #$00
+	lda     #$01
+	jsr     _oam_spr
+;
+; oam_spr(144, mario_pos_y + 8, 0x98, 0x1);
+;
+	ldx     #$00
+	lda     #$90
+	jsr     pusha
+	ldx     #$00
+	lda     _mario_pos_y
+	jsr     incax8
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$98
+	jsr     pusha
+	ldx     #$00
+	lda     #$01
+	jsr     _oam_spr
+;
+; oam_spr(152, mario_pos_y + 8, 0x99, 0x1);
+;
+	ldx     #$00
+	lda     #$98
+	jsr     pusha
+	ldx     #$00
+	lda     _mario_pos_y
+	jsr     incax8
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$99
+	jsr     pusha
+	ldx     #$00
+	lda     #$01
+	jsr     _oam_spr
+;
+; else{
+;
+	jmp     L0003
+;
+; oam_spr(144, mario_pos_y, 0x8A, 0x1);
+;
+L0002:	ldx     #$00
+	lda     #$90
+	jsr     pusha
+	ldx     #$00
+	lda     _mario_pos_y
+	jsr     pusha
+	ldx     #$00
+	lda     #$8A
+	jsr     pusha
+	ldx     #$00
+	lda     #$01
+	jsr     _oam_spr
+;
+; oam_spr(152, mario_pos_y, 0x8B, 0x1);
+;
+	ldx     #$00
+	lda     #$98
+	jsr     pusha
+	ldx     #$00
+	lda     _mario_pos_y
+	jsr     pusha
+	ldx     #$00
+	lda     #$8B
+	jsr     pusha
+	ldx     #$00
+	lda     #$01
+	jsr     _oam_spr
+;
+; oam_spr(144, mario_pos_y + 8, 0x9A, 0x1);
+;
+	ldx     #$00
+	lda     #$90
+	jsr     pusha
+	ldx     #$00
+	lda     _mario_pos_y
+	jsr     incax8
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$9A
+	jsr     pusha
+	ldx     #$00
+	lda     #$01
+	jsr     _oam_spr
+;
+; oam_spr(152, mario_pos_y + 8, 0x9B, 0x1);
+;
+	ldx     #$00
+	lda     #$98
+	jsr     pusha
+	ldx     #$00
+	lda     _mario_pos_y
+	jsr     incax8
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$9B
+	jsr     pusha
+	ldx     #$00
+	lda     #$01
+	jsr     _oam_spr
+;
+; }
+;
+L0003:	jsr     incsp1
+	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ update_mario (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_update_mario: near
+
+.segment	"CODE"
+
+;
+; if(can_jump){
+;
+	lda     _can_jump
+	jeq     L0002
+;
+; draw_mario(1);
+;
+	ldx     #$00
+	lda     #$01
+	jsr     _draw_mario
+;
+; else{
+;
+	jmp     L0003
+;
+; draw_mario(0);
+;
+L0002:	ldx     #$00
+	lda     #$00
+	jsr     _draw_mario
+;
+; ++mario_vel_y;
+;
+	ldx     #$00
+	inc     _mario_vel_y
+	lda     _mario_vel_y
+;
+; mario_pos_y += mario_vel_y;
+;
+	ldx     #$00
+	lda     _mario_vel_y
+	ldx     #$00
+	ldx     #$00
+	clc
+	adc     _mario_pos_y
+	sta     _mario_pos_y
+;
+; if(mario_vel_y > 0 && mario_pos_y > 120){
+;
+L0003:	ldx     #$00
+	lda     _mario_vel_y
+	cmp     #$00
+	jsr     boolne
+	jeq     L0005
+	ldx     #$00
+	lda     _mario_pos_y
+	cmp     #$79
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jne     L0006
+L0005:	ldx     #$00
+	lda     #$00
+	jeq     L0007
+L0006:	ldx     #$00
+	lda     #$01
+L0007:	jeq     L0004
+;
+; can_jump = 1;
+;
+	ldx     #$00
+	lda     #$01
+	sta     _can_jump
+;
+; mario_vel_y = 0;
+;
+	ldx     #$00
+	lda     #$00
+	sta     _mario_vel_y
+;
+; mario_pos_y = 120;
+;
+	ldx     #$00
+	lda     #$78
+	sta     _mario_pos_y
+;
+; }
+;
+L0004:	rts
 
 .endproc
 
@@ -490,199 +1739,746 @@ L0009:	jsr     _ppu_on_all
 .segment	"CODE"
 
 ;
-; if((pad1Next & PAD_UP) && menuIndexV){ 
+; unsigned char result = 0;
 ;
-	lda     _pad1Next
+	lda     #$00
+	jsr     pusha
+;
+; if(PAD_UP & pad1){ 
+;
+	ldx     #$00
+	lda     _pad1
+	ldx     #$00
 	and     #$08
-	beq     L001B
-	lda     _menuIndexV
-	beq     L001B
+	stx     tmp1
+	ora     tmp1
+	jeq     L0003
 ;
-; cursorY -= 16;
+; cursorY -= mouse_speed;
 ;
-	lda     _cursorY
+	ldx     #$00
+	lda     _mouse_speed
+	ldx     #$00
+	ldx     #$00
+	eor     #$FF
 	sec
-	sbc     #$10
+	adc     _cursorY
 	sta     _cursorY
 ;
-; --menuIndexV;
+; if(cursorY < 1) cursorY = 1;
 ;
-	dec     _menuIndexV
+	ldx     #$00
+	lda     _cursorY
+	cmp     #$00
+	jsr     booleq
+	jeq     L0003
+	ldx     #$00
+	lda     #$01
+	sta     _cursorY
 ;
-; *p2 = 0xAE;
+; if(PAD_DOWN & pad1){ 
 ;
-	lda     _p2+1
-	sta     ptr1+1
-	lda     _p2
-	sta     ptr1
-	lda     #$AE
-	ldy     #$00
-	sta     (ptr1),y
-;
-; *menupointer = 'D';
-;
-	lda     _menupointer+1
-	sta     ptr1+1
-	lda     _menupointer
-	sta     ptr1
-	lda     #$44
-	sta     (ptr1),y
-;
-; if((pad1Next & PAD_DOWN) && (menuIndexV < 3)){ 
-;
-L001B:	lda     _pad1Next
+L0003:	ldx     #$00
+	lda     _pad1
+	ldx     #$00
 	and     #$04
-	beq     L001F
-	lda     _menuIndexV
-	cmp     #$03
-	bcs     L001F
+	stx     tmp1
+	ora     tmp1
+	jeq     L0005
 ;
-; cursorY += 16;
+; cursorY += mouse_speed;
 ;
-	lda     #$10
+	ldx     #$00
+	lda     _mouse_speed
+	ldx     #$00
+	ldx     #$00
 	clc
 	adc     _cursorY
 	sta     _cursorY
 ;
-; ++menuIndexV;
+; if(cursorY > 239)cursorY = 239;
 ;
-	inc     _menuIndexV
+	ldx     #$00
+	lda     _cursorY
+	cmp     #$F0
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0005
+	ldx     #$00
+	lda     #$EF
+	sta     _cursorY
 ;
-; *p2 = 0xB1;
+; if((pad1 & PAD_LEFT)){
 ;
-	lda     _p2+1
-	sta     ptr1+1
-	lda     _p2
-	sta     ptr1
-	lda     #$B1
-	ldy     #$00
-	sta     (ptr1),y
-;
-; *menupointer = 'T';
-;
-	lda     _menupointer+1
-	sta     ptr1+1
-	lda     _menupointer
-	sta     ptr1
-	lda     #$54
-	sta     (ptr1),y
-;
-; if((pad1Next & PAD_LEFT) && menuIndexH){
-;
-L001F:	lda     _pad1Next
+L0005:	ldx     #$00
+	lda     _pad1
+	ldx     #$00
 	and     #$02
-	beq     L0023
-	lda     _menuIndexH
-	beq     L0023
+	stx     tmp1
+	ora     tmp1
+	jeq     L0006
 ;
-; cursorX -= 128;
+; cursorX -= mouse_speed;
 ;
-	lda     _cursorX
+	ldx     #$00
+	lda     _mouse_speed
+	ldx     #$00
+	ldx     #$00
+	eor     #$FF
 	sec
-	sbc     #$80
+	adc     _cursorX
 	sta     _cursorX
 ;
-; --menuIndexH;
+; if((pad1 & PAD_RIGHT)){
 ;
-	dec     _menuIndexH
-;
-; *p2 = 0x25;
-;
-	lda     _p2+1
-	sta     ptr1+1
-	lda     _p2
-	sta     ptr1
-	lda     #$25
-	ldy     #$00
-	sta     (ptr1),y
-;
-; if((pad1Next & PAD_RIGHT) && !menuIndexH){
-;
-L0023:	lda     _pad1Next
+L0006:	ldx     #$00
+	lda     _pad1
+	ldx     #$00
 	and     #$01
-	beq     L0027
-	lda     _menuIndexH
-	bne     L0027
+	stx     tmp1
+	ora     tmp1
+	jeq     L0007
 ;
-; cursorX += 128;
+; cursorX += mouse_speed;
 ;
-	lda     #$80
+	ldx     #$00
+	lda     _mouse_speed
+	ldx     #$00
+	ldx     #$00
 	clc
 	adc     _cursorX
 	sta     _cursorX
 ;
-; ++menuIndexH;
-;
-	inc     _menuIndexH
-;
-; *p2 = 0x49;
-;
-	lda     _p2+1
-	sta     ptr1+1
-	lda     _p2
-	sta     ptr1
-	lda     #$49
-	ldy     #$00
-	sta     (ptr1),y
-;
 ; if((pad1Next & PAD_A)){
 ;
-L0027:	lda     _pad1Next
+L0007:	ldx     #$00
+	lda     _pad1Next
+	ldx     #$00
 	and     #$80
-	beq     L0029
+	stx     tmp1
+	ora     tmp1
+	jeq     L0013
 ;
-; if(page == 3) page = 0;
+; result = eval_pos();
 ;
-	lda     _page
-	cmp     #$03
-	bne     L0028
+	jsr     _eval_pos
+	ldy     #$00
+	sta     (sp),y
+;
+; if(result < 10) x = result;
+;
+	ldy     #$00
+	ldx     #$00
+	lda     (sp),y
+	cmp     #$0A
+	jsr     boolult
+	jeq     L0009
+	ldy     #$00
+	ldx     #$00
+	lda     (sp),y
+	sta     _x
+;
+; if(result == 0x0B){
+;
+L0009:	ldy     #$00
+	ldx     #$00
+	lda     (sp),y
+	cmp     #$0B
+	jsr     booleq
+	jeq     L000A
+;
+; accumulator += x;
+;
+	ldx     #$00
+	lda     _x
+	clc
+	adc     _accumulator
+	sta     _accumulator
+	txa
+	adc     _accumulator+1
+	sta     _accumulator+1
+	tax
+	lda     _accumulator
+;
+; p = get_cpu_status();
+;
+	jsr     _get_cpu_status
+	sta     _p
+;
+; if(result == 0x0D){
+;
+L000A:	ldy     #$00
+	ldx     #$00
+	lda     (sp),y
+	cmp     #$0D
+	jsr     booleq
+	jeq     L000B
+;
+; accumulator -= x;
+;
+	ldx     #$00
+	lda     _x
+	eor     #$FF
+	sec
+	adc     _accumulator
+	sta     _accumulator
+	txa
+	eor     #$FF
+	adc     _accumulator+1
+	sta     _accumulator+1
+	tax
+	lda     _accumulator
+;
+; p = get_cpu_status();
+;
+	jsr     _get_cpu_status
+	sta     _p
+;
+; if(result == 0x0A){
+;
+L000B:	ldy     #$00
+	ldx     #$00
+	lda     (sp),y
+	cmp     #$0A
+	jsr     booleq
+	jeq     L000C
+;
+; accumulator *= x;
+;
+	lda     _accumulator
+	ldx     _accumulator+1
+	jsr     pushax
+	ldx     #$00
+	lda     _x
+	jsr     tosumulax
+	sta     _accumulator
+	stx     _accumulator+1
+;
+; p = get_cpu_status();
+;
+	jsr     _get_cpu_status
+	sta     _p
+;
+; if(result == 0x0F){
+;
+L000C:	ldy     #$00
+	ldx     #$00
+	lda     (sp),y
+	cmp     #$0F
+	jsr     booleq
+	jeq     L000D
+;
+; if(x == 0) return;
+;
+	ldx     #$00
+	lda     _x
+	cmp     #$00
+	jsr     booleq
+	jeq     L000E
+	jmp     L0015
+;
+; accumulator /= x;
+;
+L000E:	lda     _accumulator
+	ldx     _accumulator+1
+	jsr     pushax
+	ldx     #$00
+	lda     _x
+	jsr     tosudivax
+	sta     _accumulator
+	stx     _accumulator+1
+;
+; p = get_cpu_status();
+;
+	jsr     _get_cpu_status
+	sta     _p
+;
+; if(result == 'C'){
+;
+L000D:	ldy     #$00
+	ldx     #$00
+	lda     (sp),y
+	cmp     #$43
+	jsr     booleq
+	jeq     L000F
+;
+; accumulator = 0;
+;
+	ldx     #$00
 	lda     #$00
-	sta     _page
+	sta     _accumulator
+	stx     _accumulator+1
 ;
-; else ++page;
+; p = get_cpu_status();
 ;
-	jmp     L0014
-L0028:	inc     _page
+	jsr     _get_cpu_status
+	sta     _p
 ;
-; clear_vram_buffer();
+; if(result == 32){
 ;
-L0014:	jsr     _clear_vram_buffer
+L000F:	ldy     #$00
+	ldx     #$00
+	lda     (sp),y
+	cmp     #$20
+	jsr     booleq
+	jeq     L0011
 ;
-; draw_bg_menu(page);
+; albert_palette++;
 ;
-	lda     _page
-	jsr     _draw_bg_menu
+	ldx     #$00
+	lda     _albert_palette
+	inc     _albert_palette
 ;
-; if((pad1Next & PAD_B)){
+; if(albert_palette > 3) albert_palette = 0;
 ;
-L0029:	lda     _pad1Next
+	ldx     #$00
+	lda     _albert_palette
+	cmp     #$04
+	lda     #$00
+	ldx     #$00
+	rol     a
+	jeq     L0011
+	ldx     #$00
+	lda     #$00
+	sta     _albert_palette
+;
+; if(result == 33){
+;
+L0011:	ldy     #$00
+	ldx     #$00
+	lda     (sp),y
+	cmp     #$21
+	jsr     booleq
+	jeq     L0013
+;
+; if(can_jump){
+;
+	lda     _can_jump
+	jeq     L0013
+;
+; mario_vel_y = -10;
+;
+	ldx     #$00
+	lda     #$F6
+	sta     _mario_vel_y
+;
+; can_jump = 0;
+;
+	ldx     #$00
+	lda     #$00
+	sta     _can_jump
+;
+; if(pad1 & PAD_B)mouse_speed = 4;
+;
+L0013:	ldx     #$00
+	lda     _pad1
+	ldx     #$00
 	and     #$40
-	beq     L0015
+	stx     tmp1
+	ora     tmp1
+	jeq     L0014
+	ldx     #$00
+	lda     #$04
+	sta     _mouse_speed
 ;
-; if(!page) page = 3;
+; else mouse_speed = 2;
 ;
-	lda     _page
-	bne     L002A
-	lda     #$03
-	sta     _page
-;
-; else --page;
-;
-	jmp     L0017
-L002A:	dec     _page
-;
-; clear_vram_buffer();
-;
-L0017:	jsr     _clear_vram_buffer
-;
-; draw_bg_menu(page);
-;
-	lda     _page
-	jmp     _draw_bg_menu
+	jmp     L0015
+L0014:	ldx     #$00
+	lda     #$02
+	sta     _mouse_speed
 ;
 ; }
 ;
-L0015:	rts
+L0015:	jsr     incsp1
+	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ hover (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_hover: near
+
+.segment	"CODE"
+
+;
+; unsigned char result = eval_pos();
+;
+	jsr     _eval_pos
+	jsr     pusha
+;
+; unsigned char pal = 0x0;
+;
+	lda     #$00
+	jsr     pusha
+;
+; if(result == 255){
+;
+	ldy     #$01
+	ldx     #$00
+	lda     (sp),y
+	cmp     #$FF
+	jsr     booleq
+	jeq     L0002
+;
+; return;
+;
+	jmp     L0009
+;
+; if(result < 5){
+;
+L0002:	ldy     #$01
+	ldx     #$00
+	lda     (sp),y
+	cmp     #$05
+	jsr     boolult
+	jeq     L0003
+;
+; oam_spr(24, 159, '?', 0x2);
+;
+	ldx     #$00
+	lda     #$18
+	jsr     pusha
+	ldx     #$00
+	lda     #$9F
+	jsr     pusha
+	ldx     #$00
+	lda     #$3F
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; oam_spr(32 + (result << 4), 135, result + 0x30, pal);
+;
+	ldy     #$01
+	ldx     #$00
+	lda     (sp),y
+	jsr     aslax4
+	ldy     #$20
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$87
+	jsr     pusha
+	ldy     #$03
+	ldx     #$00
+	lda     (sp),y
+	ldy     #$30
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldy     #$03
+	ldx     #$00
+	lda     (sp),y
+	jsr     _oam_spr
+;
+; return;
+;
+	jmp     L0009
+;
+; if(result < 10){
+;
+L0003:	ldy     #$01
+	ldx     #$00
+	lda     (sp),y
+	cmp     #$0A
+	jsr     boolult
+	jeq     L0004
+;
+; oam_spr(24, 159, '?', 0x2);
+;
+	ldx     #$00
+	lda     #$18
+	jsr     pusha
+	ldx     #$00
+	lda     #$9F
+	jsr     pusha
+	ldx     #$00
+	lda     #$3F
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; oam_spr(32 + ((result - 5) << 4), 143, result + 0x30, pal);
+;
+	ldy     #$01
+	ldx     #$00
+	lda     (sp),y
+	jsr     decax5
+	jsr     aslax4
+	ldy     #$20
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$8F
+	jsr     pusha
+	ldy     #$03
+	ldx     #$00
+	lda     (sp),y
+	ldy     #$30
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldy     #$03
+	ldx     #$00
+	lda     (sp),y
+	jsr     _oam_spr
+;
+; return;
+;
+	jmp     L0009
+;
+; if(result == 0x0B){
+;
+L0004:	ldy     #$01
+	ldx     #$00
+	lda     (sp),y
+	cmp     #$0B
+	jsr     booleq
+	jeq     L0005
+;
+; oam_spr(64, 159, result + 0x20, pal);
+;
+	ldx     #$00
+	lda     #$40
+	jsr     pusha
+	ldx     #$00
+	lda     #$9F
+	jsr     pusha
+	ldy     #$03
+	ldx     #$00
+	lda     (sp),y
+	ldy     #$20
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldy     #$03
+	ldx     #$00
+	lda     (sp),y
+	jsr     _oam_spr
+;
+; oam_spr(24, 159, result + 0x20, 0x2);
+;
+	ldx     #$00
+	lda     #$18
+	jsr     pusha
+	ldx     #$00
+	lda     #$9F
+	jsr     pusha
+	ldy     #$03
+	ldx     #$00
+	lda     (sp),y
+	ldy     #$20
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; return;
+;
+	jmp     L0009
+;
+; if(result == 0x0D){
+;
+L0005:	ldy     #$01
+	ldx     #$00
+	lda     (sp),y
+	cmp     #$0D
+	jsr     booleq
+	jeq     L0006
+;
+; oam_spr(80, 159, result + 0x20, pal);
+;
+	ldx     #$00
+	lda     #$50
+	jsr     pusha
+	ldx     #$00
+	lda     #$9F
+	jsr     pusha
+	ldy     #$03
+	ldx     #$00
+	lda     (sp),y
+	ldy     #$20
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldy     #$03
+	ldx     #$00
+	lda     (sp),y
+	jsr     _oam_spr
+;
+; oam_spr(24, 159, result + 0x20, 0x2);
+;
+	ldx     #$00
+	lda     #$18
+	jsr     pusha
+	ldx     #$00
+	lda     #$9F
+	jsr     pusha
+	ldy     #$03
+	ldx     #$00
+	lda     (sp),y
+	ldy     #$20
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; return;
+;
+	jmp     L0009
+;
+; if(result == 0x0A){
+;
+L0006:	ldy     #$01
+	ldx     #$00
+	lda     (sp),y
+	cmp     #$0A
+	jsr     booleq
+	jeq     L0007
+;
+; oam_spr(64, 167, result + 0x20, pal);
+;
+	ldx     #$00
+	lda     #$40
+	jsr     pusha
+	ldx     #$00
+	lda     #$A7
+	jsr     pusha
+	ldy     #$03
+	ldx     #$00
+	lda     (sp),y
+	ldy     #$20
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldy     #$03
+	ldx     #$00
+	lda     (sp),y
+	jsr     _oam_spr
+;
+; oam_spr(24, 159, result + 0x20, 0x2);
+;
+	ldx     #$00
+	lda     #$18
+	jsr     pusha
+	ldx     #$00
+	lda     #$9F
+	jsr     pusha
+	ldy     #$03
+	ldx     #$00
+	lda     (sp),y
+	ldy     #$20
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; return;
+;
+	jmp     L0009
+;
+; if(result == 0x0F){
+;
+L0007:	ldy     #$01
+	ldx     #$00
+	lda     (sp),y
+	cmp     #$0F
+	jsr     booleq
+	jeq     L0008
+;
+; oam_spr(80, 167, result + 0x20, pal);
+;
+	ldx     #$00
+	lda     #$50
+	jsr     pusha
+	ldx     #$00
+	lda     #$A7
+	jsr     pusha
+	ldy     #$03
+	ldx     #$00
+	lda     (sp),y
+	ldy     #$20
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldy     #$03
+	ldx     #$00
+	lda     (sp),y
+	jsr     _oam_spr
+;
+; oam_spr(24, 159, result + 0x20, 0x2);
+;
+	ldx     #$00
+	lda     #$18
+	jsr     pusha
+	ldx     #$00
+	lda     #$9F
+	jsr     pusha
+	ldy     #$03
+	ldx     #$00
+	lda     (sp),y
+	ldy     #$20
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; return;
+;
+	jmp     L0009
+;
+; if(result == 'C'){
+;
+L0008:	ldy     #$01
+	ldx     #$00
+	lda     (sp),y
+	cmp     #$43
+	jsr     booleq
+	jeq     L0009
+;
+; oam_spr(96, 167, result, pal);
+;
+	ldx     #$00
+	lda     #$60
+	jsr     pusha
+	ldx     #$00
+	lda     #$A7
+	jsr     pusha
+	ldy     #$03
+	ldx     #$00
+	lda     (sp),y
+	jsr     pusha
+	ldy     #$03
+	ldx     #$00
+	lda     (sp),y
+	jsr     _oam_spr
+;
+; return;
+;
+	jmp     L0009
+;
+; }
+;
+L0009:	jsr     incsp2
+	rts
 
 .endproc
 
@@ -701,16 +2497,6 @@ L0015:	rts
 ;
 	jsr     _ppu_off
 ;
-; *p2 = 0xEF;
-;
-	lda     _p2+1
-	sta     ptr1+1
-	lda     _p2
-	sta     ptr1
-	lda     #$EF
-	ldy     #$00
-	sta     (ptr1),y
-;
 ; pal_spr(palSprites);
 ;
 	lda     #<(_palSprites)
@@ -719,15 +2505,19 @@ L0015:	rts
 ;
 ; for(i = 0;i < BALLS_MAX; ++i){
 ;
+	ldx     #$00
 	lda     #$00
 	sta     _i
-L0034:	lda     _i
+L0002:	ldx     #$00
+	lda     _i
 	cmp     #$08
-	jcs     L0003
+	jsr     boolult
+	jne     L0005
+	jmp     L0003
 ;
 ; ball_x[i] = rand8();
 ;
-	lda     #<(_ball_x)
+L0005:	lda     #<(_ball_x)
 	ldx     #>(_ball_x)
 	clc
 	adc     _i
@@ -760,10 +2550,11 @@ L0007:	jsr     pushax
 ;
 	jsr     _rand8
 	jsr     pushax
+	ldx     #$00
 	lda     #$03
-	jsr     tosumoda0
-	clc
-	adc     #$01
+	jsr     tosumodax
+	jsr     incax1
+	ldx     #$00
 	sta     _spr
 ;
 ; ball_dx[i] = j & 1? -spr:spr;
@@ -772,30 +2563,35 @@ L0007:	jsr     pushax
 	ldx     #>(_ball_dx)
 	clc
 	adc     _i
-	bcc     L0009
+	bcc     L0008
 	inx
-L0009:	sta     ptr1
-	stx     ptr1+1
+L0008:	jsr     pushax
+	ldx     #$00
 	lda     _j
+	ldx     #$00
 	and     #$01
-	beq     L0035
+	stx     tmp1
+	ora     tmp1
+	jeq     L0009
+	ldx     #$00
 	lda     _spr
-	eor     #$FF
-	clc
-	adc     #$01
-	jmp     L0036
-L0035:	lda     _spr
-L0036:	ldy     #$00
-	sta     (ptr1),y
+	jsr     negax
+	jmp     L000A
+L0009:	ldx     #$00
+	lda     _spr
+L000A:	ldx     #$00
+	ldy     #$00
+	jsr     staspidx
 ;
 ; spr = 1 + (rand8() % 3);
 ;
 	jsr     _rand8
 	jsr     pushax
+	ldx     #$00
 	lda     #$03
-	jsr     tosumoda0
-	clc
-	adc     #$01
+	jsr     tosumodax
+	jsr     incax1
+	ldx     #$00
 	sta     _spr
 ;
 ; ball_dy[i] = j & 1? -spr:spr;
@@ -804,26 +2600,32 @@ L0036:	ldy     #$00
 	ldx     #>(_ball_dy)
 	clc
 	adc     _i
-	bcc     L000D
+	bcc     L000B
 	inx
-L000D:	sta     ptr1
-	stx     ptr1+1
+L000B:	jsr     pushax
+	ldx     #$00
 	lda     _j
+	ldx     #$00
 	and     #$01
-	beq     L0037
+	stx     tmp1
+	ora     tmp1
+	jeq     L000C
+	ldx     #$00
 	lda     _spr
-	eor     #$FF
-	clc
-	adc     #$01
-	jmp     L0038
-L0037:	lda     _spr
-L0038:	ldy     #$00
-	sta     (ptr1),y
+	jsr     negax
+	jmp     L000D
+L000C:	ldx     #$00
+	lda     _spr
+L000D:	ldx     #$00
+	ldy     #$00
+	jsr     staspidx
 ;
 ; for(i = 0;i < BALLS_MAX; ++i){
 ;
+	ldx     #$00
 	inc     _i
-	jmp     L0034
+	lda     _i
+	jmp     L0002
 ;
 ; pal_bg(palette); // load the BG palette
 ;
@@ -837,241 +2639,210 @@ L0003:	lda     #<(_palette)
 	ldx     #>(_palSprites)
 	jsr     _pal_spr
 ;
-; put_str(NTADR_A(1, 2), "GO GATORS!");
+; put_str(NTADR_A(1, 2), "Museum Emulation Systems");
 ;
 	ldx     #$20
 	lda     #$41
 	jsr     pushax
-	lda     #<(S0023)
-	ldx     #>(S0023)
+	lda     #<(S0002)
+	ldx     #>(S0002)
 	jsr     _put_str
 ;
-; put_str(NTADR_A(1, 4), "VIDEO MODE:");
+; put_str(NTADR_A(1, 4), "Video mode:");
 ;
 	ldx     #$20
 	lda     #$81
 	jsr     pushax
-	lda     #<(S0024)
-	ldx     #>(S0024)
+	lda     #<(S0003)
+	ldx     #>(S0003)
 	jsr     _put_str
 ;
-; if(ppu_system()) put_str(NTADR_A(1, 5), "NTSC");
+; put_str(NTADR_A(1 ,6), "Author: Beto Perez");
+;
+	ldx     #$20
+	lda     #$C1
+	jsr     pushax
+	lda     #<(S0004)
+	ldx     #>(S0004)
+	jsr     _put_str
+;
+; if(ppu_system()) put_str(NTADR_A(13, 4), "NTSC");
 ;
 	jsr     _ppu_system
 	tax
-	beq     L0010
+	jeq     L000E
 	ldx     #$20
-	lda     #$A1
+	lda     #$8D
 	jsr     pushax
-	lda     #<(S0025)
-	ldx     #>(S0025)
-;
-; else put_str(NTADR_A(1, 5), "PAL");
-;
-	jmp     L0031
-L0010:	ldx     #$20
-	lda     #$A1
-	jsr     pushax
-	lda     #<(S0026)
-	ldx     #>(S0026)
-L0031:	jsr     _put_str
-;
-; put_str(NTADR_A(7, 16), "INDEX: ");
-;
-	ldx     #$22
-	lda     #$07
-	jsr     pushax
-	lda     #<(S0027)
-	ldx     #>(S0027)
+	lda     #<(S0005)
+	ldx     #>(S0005)
 	jsr     _put_str
 ;
-; put_str(NTADR_A(8, 17), "PAGE: ");
+; else put_str(NTADR_A(13, 4), "PAL");
 ;
-	ldx     #$22
-	lda     #$28
+	jmp     L000F
+L000E:	ldx     #$20
+	lda     #$8D
 	jsr     pushax
-	lda     #<(S0028)
-	ldx     #>(S0028)
+	lda     #<(S0006)
+	ldx     #>(S0006)
 	jsr     _put_str
 ;
-; draw_bg_menu(page);
+; put_str(NTADR_A(1, 15), "A: ");
 ;
-	lda     _page
-	jsr     _draw_bg_menu
+L000F:	ldx     #$21
+	lda     #$E1
+	jsr     pushax
+	lda     #<(S0007)
+	ldx     #>(S0007)
+	jsr     _put_str
+;
+; put_str(NTADR_A(1, 17), "X: 0 1 2 3 4");
+;
+	ldx     #$22
+	lda     #$21
+	jsr     pushax
+	lda     #<(S0008)
+	ldx     #>(S0008)
+	jsr     _put_str
+;
+; put_str(NTADR_A(1, 18), "   5 6 7 8 9");
+;
+	ldx     #$22
+	lda     #$41
+	jsr     pushax
+	lda     #<(S0009)
+	ldx     #>(S0009)
+	jsr     _put_str
+;
+; put_str(NTADR_A(1, 20), "A   X: + -");
+;
+	ldx     #$22
+	lda     #$81
+	jsr     pushax
+	lda     #<(S000A)
+	ldx     #>(S000A)
+	jsr     _put_str
+;
+; put_str(NTADR_A(1, 21), "       * / C");
+;
+	ldx     #$22
+	lda     #$A1
+	jsr     pushax
+	lda     #<(S000B)
+	ldx     #>(S000B)
+	jsr     _put_str
+;
+; put_str(NTADR_A(1, 23), "P: ");
+;
+	ldx     #$22
+	lda     #$E1
+	jsr     pushax
+	lda     #<(S000C)
+	ldx     #>(S000C)
+	jsr     _put_str
+;
+; put_str(NTADR_A(1, 27), "POS X: ");
+;
+	ldx     #$23
+	lda     #$61
+	jsr     pushax
+	lda     #<(S000D)
+	ldx     #>(S000D)
+	jsr     _put_str
+;
+; put_str(NTADR_A(1, 28), "POS Y: ");
+;
+	ldx     #$23
+	lda     #$81
+	jsr     pushax
+	lda     #<(S000E)
+	ldx     #>(S000E)
+	jsr     _put_str
 ;
 ; ppu_on_all();
 ;
 	jsr     _ppu_on_all
 ;
+; while (1){
+;
+	jmp     L0012
+;
 ; ppu_wait_nmi();
 ;
-L0012:	jsr     _ppu_wait_nmi
+L0010:	jsr     _ppu_wait_nmi
 ;
 ; oam_clear();
 ;
 	jsr     _oam_clear
 ;
-; spr = 0;
+; oam_spr(cursorX, cursorY, 0x7F, 0x0);
 ;
-	lda     #$00
-	sta     _spr
-;
-; for(i = 0; i < BALLS_MAX; ++i){
-;
-	sta     _i
-L0039:	lda     _i
-	cmp     #$08
-	jcs     L0016
-;
-; if(i % 2) oam_spr(ball_x[i], ball_y[i], 0x55, i % 4);
-;
-	and     #$01
-	beq     L0019
-	jsr     decsp3
-	ldy     _i
-	lda     _ball_x,y
-	ldy     #$02
-	sta     (sp),y
-	ldy     _i
-	lda     _ball_y,y
-	ldy     #$01
-	sta     (sp),y
-	lda     #$55
-;
-; else oam_spr(ball_x[i], ball_y[i], 0x46, i % 4);
-;
-	jmp     L003F
-L0019:	jsr     decsp3
-	ldy     _i
-	lda     _ball_x,y
-	ldy     #$02
-	sta     (sp),y
-	ldy     _i
-	lda     _ball_y,y
-	ldy     #$01
-	sta     (sp),y
-	lda     #$46
-L003F:	dey
-	sta     (sp),y
-	lda     _i
-	and     #$03
-	jsr     _oam_spr
-;
-; ball_x[i] += ball_dx[i];
-;
-	lda     #<(_ball_x)
-	ldx     #>(_ball_x)
-	clc
-	adc     _i
-	bcc     L001F
-	inx
-L001F:	sta     sreg
-	stx     sreg+1
-	sta     ptr1
-	stx     ptr1+1
-	ldy     #$00
-	lda     (ptr1),y
-	sta     ptr1
-	ldy     _i
-	lda     _ball_dx,y
-	clc
-	adc     ptr1
-	ldy     #$00
-	sta     (sreg),y
-;
-; ball_y[i] += ball_dy[i];
-;
-	lda     #<(_ball_y)
-	ldx     #>(_ball_y)
-	clc
-	adc     _i
-	bcc     L0021
-	inx
-L0021:	sta     sreg
-	stx     sreg+1
-	sta     ptr1
-	stx     ptr1+1
-	lda     (ptr1),y
-	sta     ptr1
-	ldy     _i
-	lda     _ball_dy,y
-	clc
-	adc     ptr1
-	ldy     #$00
-	sta     (sreg),y
-;
-; if(ball_x[i]>=(256-8)) ball_dx[i]=-ball_dx[i];
-;
-	ldy     _i
-	lda     _ball_x,y
-	cmp     #$F8
-	bcc     L0023
-	lda     #<(_ball_dx)
-	ldx     #>(_ball_dx)
-	clc
-	adc     _i
-	bcc     L0025
-	inx
-L0025:	sta     ptr1
-	stx     ptr1+1
-	ldy     _i
-	lda     _ball_dx,y
-	eor     #$FF
-	clc
-	adc     #$01
-	ldy     #$00
-	sta     (ptr1),y
-;
-; if(ball_y[i]>=(240-8)) ball_dy[i]=-ball_dy[i];
-;
-L0023:	ldy     _i
-	lda     _ball_y,y
-	cmp     #$E8
-	bcc     L003A
-	lda     #<(_ball_dy)
-	ldx     #>(_ball_dy)
-	clc
-	adc     _i
-	bcc     L0029
-	inx
-L0029:	sta     ptr1
-	stx     ptr1+1
-	ldy     _i
-	lda     _ball_dy,y
-	eor     #$FF
-	clc
-	adc     #$01
-	ldy     #$00
-	sta     (ptr1),y
-;
-; for(i = 0; i < BALLS_MAX; ++i){
-;
-L003A:	inc     _i
-	jmp     L0039
-;
-; oam_spr(cursorX, cursorY, 0x7F, 0x00);
-;
-L0016:	jsr     decsp3
+	ldx     #$00
 	lda     _cursorX
-	ldy     #$02
-	sta     (sp),y
+	jsr     pusha
+	ldx     #$00
 	lda     _cursorY
-	dey
-	sta     (sp),y
+	jsr     pusha
+	ldx     #$00
 	lda     #$7F
-	dey
-	sta     (sp),y
-	tya
+	jsr     pusha
+	ldx     #$00
+	lda     #$00
 	jsr     _oam_spr
+;
+; draw_cursor_data();
+;
+	jsr     _draw_cursor_data
+;
+; hover();
+;
+	jsr     _hover
+;
+; draw_accumulator();
+;
+	jsr     _draw_accumulator
+;
+; oam_spr(112, 135, x + 0x30, 0x2);
+;
+	ldx     #$00
+	lda     #$70
+	jsr     pusha
+	ldx     #$00
+	lda     #$87
+	jsr     pusha
+	ldx     #$00
+	lda     _x
+	ldy     #$30
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; draw_cpu_status();
+;
+	jsr     _draw_cpu_status
+;
+; draw_albert();
+;
+	jsr     _draw_albert
+;
+; update_mario();
+;
+	jsr     _update_mario
 ;
 ; pad1 = pad_poll(0);
 ;
+	ldx     #$00
 	lda     #$00
 	jsr     _pad_poll
 	sta     _pad1
 ;
 ; pad1Next = get_pad_new(0);
 ;
+	ldx     #$00
 	lda     #$00
 	jsr     _get_pad_new
 	sta     _pad1Next
@@ -1080,120 +2851,13 @@ L0016:	jsr     decsp3
 ;
 	jsr     _handleMenuInput
 ;
-; p2val = menuIndexH + menuIndexV * 2 + page * 8;
-;
-	ldx     #$00
-	lda     _menuIndexV
-	asl     a
-	bcc     L0033
-	inx
-	clc
-L0033:	adc     _menuIndexH
-	bcc     L0030
-	inx
-L0030:	sta     ptr1
-	stx     ptr1+1
-	ldx     #$00
-	lda     _page
-	jsr     shlax3
-	clc
-	adc     ptr1
-	pha
-	txa
-	adc     ptr1+1
-	pla
-	sta     _p2val
-;
-; p2low = p2val & 0x0F;
-;
-	and     #$0F
-	sta     _p2low
-;
-; p2low += 0x30;
-;
-	lda     #$30
-	clc
-	adc     _p2low
-	sta     _p2low
-;
-; if(p2low >= 58) p2low += 7;
-;
-	cmp     #$3A
-	bcc     L003B
-	lda     #$07
-	clc
-	adc     _p2low
-	sta     _p2low
-;
-; p2high = p2val & 0xF0;
-;
-L003B:	lda     _p2val
-	and     #$F0
-	sta     _p2high
-;
-; p2high = p2high >> 4;
-;
-	lsr     a
-	lsr     a
-	lsr     a
-	lsr     a
-	sta     _p2high
-;
-; p2high += 0x30;
-;
-	lda     #$30
-	clc
-	adc     _p2high
-	sta     _p2high
-;
-; oam_spr(0x88, 0x80, p2low, 0x0);
-;
-	jsr     decsp3
-	lda     #$88
-	ldy     #$02
-	sta     (sp),y
-	lda     #$80
-	dey
-	sta     (sp),y
-	lda     _p2low
-	dey
-	sta     (sp),y
-	tya
-	jsr     _oam_spr
-;
-; oam_spr(0x80, 0x80, p2high, 0x0);
-;
-	jsr     decsp3
-	lda     #$80
-	ldy     #$02
-	sta     (sp),y
-	dey
-	sta     (sp),y
-	lda     _p2high
-	dey
-	sta     (sp),y
-	tya
-	jsr     _oam_spr
-;
-; oam_spr(0x88, 0x88, page + 0x30, 0x0);
-;
-	jsr     decsp3
-	lda     #$88
-	ldy     #$02
-	sta     (sp),y
-	dey
-	sta     (sp),y
-	lda     _page
-	clc
-	adc     #$30
-	dey
-	sta     (sp),y
-	tya
-	jsr     _oam_spr
-;
 ; while (1){
 ;
-	jmp     L0012
+L0012:	jmp     L0010
+;
+; }
+;
+	rts
 
 .endproc
 

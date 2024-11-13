@@ -166,3 +166,4 @@ void seed_rng(void);
 // get from the frame count. You can use a button (start on title screen) to trigger
 
 
+unsigned char __fastcall__ get_cpu_status();
