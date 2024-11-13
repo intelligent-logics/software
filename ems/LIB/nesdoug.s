@@ -7,6 +7,7 @@
 .export  _get_ppu_addr, _get_at_addr, _set_data_pointer, _set_mt_pointer, _buffer_4_mt, _buffer_1_mt
 .export _color_emphasis, _xy_split, _gray_line, _seed_rng
 .export _clear_vram_buffer
+.export _get_cpu_status
 
 .segment "CODE"
 
@@ -809,4 +810,8 @@ _seed_rng:
 	rts
 	
 	
-	
+
+_get_cpu_status:
+	php
+	pla
+	rts	
