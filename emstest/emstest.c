@@ -14,6 +14,10 @@
 #define LT_GY 0x10
 #define WHITE 0x30
 // there's some oddities in the palette code, black must be 0x0f, white must be 0x30
+
+unsigned char song;
+#define MAX_SONGS 2
+enum {SONG_GAME, SONG_PAUSE};
  
  
  
@@ -56,10 +60,8 @@ void main (void) {
 		++i;
 	}	
 	
-	// vram_adr and vram_put only work with screen off
-	// NOTE, you could replace everything between i = 0; and here with...
-	// vram_write(text,sizeof(text));
-	// does the same thing
+	song = 1;
+	music_play(song);
 	
 	ppu_on_all(); //	turn on screen
 	
