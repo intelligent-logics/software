@@ -2,7 +2,7 @@
 /* Original example provided by Doug
 
 	Functionality provided by Beto Perez
-	Last Update 11/14/24 - Sound added - Kieran 
+	Last Update 11/14/24 - Sound added - Kieran A
 	; Sound effect used from NESDoug
 
 */
