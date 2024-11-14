@@ -2,7 +2,8 @@
 /* Original example provided by Doug
 
 	Functionality provided by Beto Perez
-	Last Update 11/13/24 - Finalizations without sound
+	Last Update 11/14/24 - Sound added - Kieran 
+	; Sound effect used from NESDoug
 
 */
 #include "LIB/neslib.h"
@@ -28,6 +29,7 @@ unsigned char flags[8] = {'N', 'V', '1', 'B', 'D', 'I', 'Z', 'C'};
 
 unsigned char albert_palette = 0;
 
+enum {SFX_JUMP, SFX_DING, SFX_NOISE};
 
 #define MENU_SIZE 127
 #define ENTRY_SIZE 16
@@ -193,6 +195,7 @@ void update_mario(){
 	if(can_jump) draw_mario(1);
 	else{
 		draw_mario(0);
+		sfx_play(SFX_JUMP, 0);
 		++mario_vel_y;
 		mario_pos_y += mario_vel_y;
 
@@ -447,7 +450,7 @@ void main (void) {
 
 	put_str(NTADR_A(1, 2), "Museum Emulation Systems");
 	put_str(NTADR_A(1, 4), "Video mode:");
-	put_str(NTADR_A(1 ,6), "Author: Beto Perez");
+	put_str(NTADR_A(1 ,6), "Authors: Beto Perez Kieran Abesamis");
 
 	
 	if(ppu_system()) put_str(NTADR_A(13, 4), "NTSC");

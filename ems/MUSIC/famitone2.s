@@ -1,4 +1,5 @@
 ;FamiTone2 v1.12
+; Used is from NESDoug
 
 
 

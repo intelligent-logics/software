@@ -19,6 +19,7 @@
 	.import		_ppu_system
 	.import		_oam_clear
 	.import		_oam_spr
+	.import		_sfx_play
 	.import		_pad_poll
 	.import		_rand8
 	.import		_vram_adr
@@ -1646,13 +1647,10 @@ L0003:	jsr     incsp1
 .segment	"CODE"
 
 ;
-; if(can_jump){
+; if(can_jump) draw_mario(1);
 ;
 	lda     _can_jump
 	jeq     L0002
-;
-; draw_mario(1);
-;
 	ldx     #$00
 	lda     #$01
 	jsr     _draw_mario
@@ -1666,6 +1664,15 @@ L0003:	jsr     incsp1
 L0002:	ldx     #$00
 	lda     #$00
 	jsr     _draw_mario
+;
+; sfx_play(SFX_JUMP, 0);
+;
+	ldx     #$00
+	lda     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$00
+	jsr     _sfx_play
 ;
 ; ++mario_vel_y;
 ;

@@ -266,7 +266,7 @@ music_data:
 
 	.if(FT_SFX_ENABLE)
 sounds_data:
-;	.include "sounds.s"
+	.include "MUSIC/SoundFx.s"
 	.endif
 
 	
