@@ -1,13 +1,12 @@
-Completed work:
-	Fully-functional fake menu.
-	NES Core breakdown (compilation TBD)
-	Understanding of MiSTer and how it relates to our own project.
+Last Updated: 11/20/2024
 
-Work to be done (semester 1):
-	NES Core compiles
-	NES Core runs a program and outputs video and audio
-	Microcrontoller basic functionality (read and move SD card contents)
-	Microcontroller intermediate functionality (indexing and hex dumping/flashing)
+Completed work:
+	Stress Test ROM
+		- Sound, Movement Test: Mario Jumping when 'A' is clicked
+		- PPU Test: Click on Albert to change Color Palettes
+		- Accumulator Test: Calculator, Register Status Flags 
+		- Benchmark TesT: Calculates amount of cycles for common NES Instructions
+		
 
 Architecture:
 	Right now, the bootloader menu runs on the MiSTer. The NES core can be flashed onto boards,
@@ -15,15 +14,13 @@ Architecture:
 	development. So our total progress in the pre-alpha build is a working ROM on both FCEUX and
 	the MiSTer. 
 
-Known Bugs:
-	Compilation errors of newest NES core used (Xilinx). Declaration problems with includes.
-	Bootloader has no known bugs as of the latest build. Any flaws right now are design choices and subjective.
-	
-
 
 Run make to build.
 Builds the NES ROM along with the .s file that generates from the C code.
 EMS.C has been updated with better comments
+
+Open ems.nes in FCEUX or on MiSTER core itself
+
 
 
 1. Do all of this on WSL
