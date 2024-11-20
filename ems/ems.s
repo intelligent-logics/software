@@ -33,6 +33,8 @@
 	.export		_p
 	.export		_p_temp
 	.export		_mouse_speed
+	.export		_cycles1
+	.export		_cycles2
 	.export		_temp
 	.export		_flags
 	.export		_albert_palette
@@ -58,6 +60,8 @@
 	.export		_draw_albert
 	.export		_draw_mario
 	.export		_update_mario
+	.export		_draw_cycles
+	.export		_benchmark
 	.export		_handleMenuInput
 	.export		_hover
 	.export		_main
@@ -78,17 +82,12 @@ _p_temp:
 	.byte	$00
 _mouse_speed:
 	.byte	$02
+_cycles1:
+	.word	$0000
+_cycles2:
+	.word	$0000
 _temp:
 	.byte	$00
-_flags:
-	.byte	$4E
-	.byte	$56
-	.byte	$31
-	.byte	$42
-	.byte	$44
-	.byte	$49
-	.byte	$5A
-	.byte	$43
 _albert_palette:
 	.byte	$00
 _j:
@@ -116,6 +115,15 @@ _mario_pos_y:
 
 .segment	"RODATA"
 
+_flags:
+	.byte	$4E
+	.byte	$56
+	.byte	$31
+	.byte	$42
+	.byte	$44
+	.byte	$49
+	.byte	$5A
+	.byte	$43
 _palSprites:
 	.byte	$0F
 	.byte	$09
@@ -150,45 +158,46 @@ _palette:
 	.byte	$00
 	.byte	$00
 	.byte	$00
-S0002:
+S002F:
 	.byte	$4D,$75,$73,$65,$75,$6D,$20,$45,$6D,$75,$6C,$61,$74,$69,$6F,$6E
 	.byte	$20,$53,$79,$73,$74,$65,$6D,$73,$00
-S0004:
+S003B:
+	.byte	$41,$44,$43,$2F,$53,$42,$2F,$53,$48,$46,$3A,$20,$20,$20,$20,$43
+	.byte	$79,$63,$6C,$65,$73,$00
+S003C:
+	.byte	$4F,$52,$2F,$41,$4E,$44,$2F,$58,$4F,$52,$3A,$20,$20,$20,$20,$43
+	.byte	$79,$63,$6C,$65,$73,$00
+S003A:
+	.byte	$42,$65,$6E,$63,$68,$6D,$61,$72,$6B,$20,$31,$30,$30,$20,$49,$3A
+	.byte	$20,$28,$42,$29,$00
+S0031:
 	.byte	$41,$75,$74,$68,$6F,$72,$3A,$20,$42,$65,$74,$6F,$20,$50,$65,$72
 	.byte	$65,$7A,$00
-S000B:
-	.byte	$20,$20,$20,$20,$20,$20,$20,$2A,$20,$2F,$20,$43,$00
-S0009:
-	.byte	$20,$20,$20,$35,$20,$36,$20,$37,$20,$38,$20,$39,$00
-S0008:
+S0035:
 	.byte	$58,$3A,$20,$30,$20,$31,$20,$32,$20,$33,$20,$34,$00
-S0003:
+S0036:
+	.byte	$20,$20,$20,$35,$20,$36,$20,$37,$20,$38,$20,$39,$00
+S0038:
+	.byte	$20,$20,$20,$20,$20,$20,$20,$2A,$20,$2F,$20,$43,$00
+S0030:
 	.byte	$56,$69,$64,$65,$6F,$20,$6D,$6F,$64,$65,$3A,$00
-S000A:
+S0037:
 	.byte	$41,$20,$20,$20,$58,$3A,$20,$2B,$20,$2D,$00
-S000D:
+S003D:
 	.byte	$50,$4F,$53,$20,$58,$3A,$20,$00
-S000E:
+S003E:
 	.byte	$50,$4F,$53,$20,$59,$3A,$20,$00
-S0005:
+S0032:
 	.byte	$4E,$54,$53,$43,$00
-S0006:
-	.byte	$50,$41,$4C,$00
-S000C:
-	.byte	$50,$3A,$20,$00
-S0007:
+S0034:
 	.byte	$41,$3A,$20,$00
+S0033:
+	.byte	$50,$41,$4C,$00
+S0039:
+	.byte	$50,$3A,$20,$00
 
 .segment	"BSS"
 
-_ball_x:
-	.res	8,$00
-_ball_y:
-	.res	8,$00
-_ball_dx:
-	.res	8,$00
-_ball_dy:
-	.res	8,$00
 _i:
 	.res	1,$00
 
@@ -1413,10 +1422,10 @@ L0002:	ldx     #$00
 	jne     L0005
 	jmp     L0003
 ;
-; for(j = 1; j != 7; ++j){
+; for(j = 2; j != 7; ++j){
 ;
 L0005:	ldx     #$00
-	lda     #$01
+	lda     #$02
 	sta     _j
 L0006:	ldx     #$00
 	lda     _j
@@ -1456,7 +1465,7 @@ L0009:	ldx     #$00
 	lda     _albert_palette
 	jsr     _oam_spr
 ;
-; for(j = 1; j != 7; ++j){
+; for(j = 2; j != 7; ++j){
 ;
 	ldx     #$00
 	inc     _j
@@ -1470,9 +1479,24 @@ L0004:	ldx     #$00
 	lda     _i
 	jmp     L0002
 ;
+; oam_spr(208, 60, 0xD0, albert_palette);
+;
+L0003:	ldx     #$00
+	lda     #$D0
+	jsr     pusha
+	ldx     #$00
+	lda     #$3C
+	jsr     pusha
+	ldx     #$00
+	lda     #$D0
+	jsr     pusha
+	ldx     #$00
+	lda     _albert_palette
+	jsr     _oam_spr
+;
 ; }
 ;
-L0003:	rts
+	rts
 
 .endproc
 
@@ -1736,6 +1760,1319 @@ L0004:	rts
 .endproc
 
 ; ---------------------------------------------------------------
+; void __near__ draw_cycles (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_draw_cycles: near
+
+.segment	"CODE"
+
+;
+; oam_spr(200, 215, (cycles1 % 10) + 0x30, 0x2);
+;
+	ldx     #$00
+	lda     #$C8
+	jsr     pusha
+	ldx     #$00
+	lda     #$D7
+	jsr     pusha
+	lda     _cycles1
+	ldx     _cycles1+1
+	jsr     pushax
+	ldx     #$00
+	lda     #$0A
+	jsr     tosumodax
+	ldy     #$30
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; oam_spr(192, 215, ((cycles1 / 10) % 10) + 0x30, 0x2);
+;
+	ldx     #$00
+	lda     #$C0
+	jsr     pusha
+	ldx     #$00
+	lda     #$D7
+	jsr     pusha
+	lda     _cycles1
+	ldx     _cycles1+1
+	jsr     pushax
+	ldx     #$00
+	lda     #$0A
+	jsr     tosudivax
+	jsr     pushax
+	ldx     #$00
+	lda     #$0A
+	jsr     tosumodax
+	ldy     #$30
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; oam_spr(184, 215, ((cycles1 / 100) % 10) + 0x30, 0x2);
+;
+	ldx     #$00
+	lda     #$B8
+	jsr     pusha
+	ldx     #$00
+	lda     #$D7
+	jsr     pusha
+	lda     _cycles1
+	ldx     _cycles1+1
+	jsr     pushax
+	ldx     #$00
+	lda     #$64
+	jsr     tosudivax
+	jsr     pushax
+	ldx     #$00
+	lda     #$0A
+	jsr     tosumodax
+	ldy     #$30
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; oam_spr(200, 223, (cycles2 % 10) + 0x30, 0x2);
+;
+	ldx     #$00
+	lda     #$C8
+	jsr     pusha
+	ldx     #$00
+	lda     #$DF
+	jsr     pusha
+	lda     _cycles2
+	ldx     _cycles2+1
+	jsr     pushax
+	ldx     #$00
+	lda     #$0A
+	jsr     tosumodax
+	ldy     #$30
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; oam_spr(192, 223, ((cycles2 / 10) % 10) + 0x30, 0x2);
+;
+	ldx     #$00
+	lda     #$C0
+	jsr     pusha
+	ldx     #$00
+	lda     #$DF
+	jsr     pusha
+	lda     _cycles2
+	ldx     _cycles2+1
+	jsr     pushax
+	ldx     #$00
+	lda     #$0A
+	jsr     tosudivax
+	jsr     pushax
+	ldx     #$00
+	lda     #$0A
+	jsr     tosumodax
+	ldy     #$30
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; oam_spr(184, 223, ((cycles2 / 100) % 10) + 0x30, 0x2);
+;
+	ldx     #$00
+	lda     #$B8
+	jsr     pusha
+	ldx     #$00
+	lda     #$DF
+	jsr     pusha
+	lda     _cycles2
+	ldx     _cycles2+1
+	jsr     pushax
+	ldx     #$00
+	lda     #$64
+	jsr     tosudivax
+	jsr     pushax
+	ldx     #$00
+	lda     #$0A
+	jsr     tosumodax
+	ldy     #$30
+	jsr     incaxy
+	ldx     #$00
+	jsr     pusha
+	ldx     #$00
+	lda     #$02
+	jsr     _oam_spr
+;
+; }
+;
+	rts
+
+.endproc
+
+; ---------------------------------------------------------------
+; void __near__ benchmark (void)
+; ---------------------------------------------------------------
+
+.segment	"CODE"
+
+.proc	_benchmark: near
+
+.segment	"CODE"
+
+;
+; for(i = 0; i < 100; i++){
+;
+	ldx     #$00
+	lda     #$00
+	sta     _i
+L0002:	ldx     #$00
+	lda     _i
+	cmp     #$64
+	jsr     boolult
+	jne     L0005
+	jmp     L0003
+;
+; temp = rand8() % 3;
+;
+L0005:	jsr     _rand8
+	jsr     pushax
+	ldx     #$00
+	lda     #$03
+	jsr     tosumodax
+	ldx     #$00
+	sta     _temp
+;
+; if(temp == 0){
+;
+	ldx     #$00
+	lda     _temp
+	cmp     #$00
+	jsr     booleq
+	jeq     L0008
+;
+; temp = rand8() % 7;
+;
+	jsr     _rand8
+	jsr     pushax
+	ldx     #$00
+	lda     #$07
+	jsr     tosumodax
+	ldx     #$00
+	sta     _temp
+;
+; switch(temp){
+;
+	ldx     #$00
+	lda     _temp
+	jmp     L0007
+;
+; }   
+;
+L0007:	cmp     #$00
+	jeq     L0009
+	cmp     #$01
+	jeq     L000B
+	cmp     #$02
+	jeq     L000D
+	cmp     #$03
+	jeq     L000F
+	cmp     #$04
+	jeq     L0011
+	cmp     #$05
+	jeq     L0013
+	cmp     #$06
+	jeq     L0015
+	cmp     #$07
+	jeq     L0017
+	jmp     L0008
+;
+; __asm__("adc #5");
+;
+L0009:	adc     #5
+;
+; cycles1 += 2;
+;
+	lda     #$02
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L000A
+	inc     _cycles1+1
+L000A:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L0008
+;
+; __asm__("adc 16");
+;
+L000B:	adc     16
+;
+; cycles1 += 3;
+;
+	lda     #$03
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L000C
+	inc     _cycles1+1
+L000C:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L0008
+;
+; __asm__("adc 16, X");
+;
+L000D:	adc     16,x
+;
+; cycles1 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L000E
+	inc     _cycles1+1
+L000E:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L0008
+;
+; __asm__("adc 255");
+;
+L000F:	adc     255
+;
+; cycles1 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L0010
+	inc     _cycles1+1
+L0010:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L0008
+;
+; __asm__("adc 255, X");
+;
+L0011:	adc     255,x
+;
+; cycles1 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L0012
+	inc     _cycles1+1
+L0012:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L0008
+;
+; __asm__("adc 255, Y");
+;
+L0013:	adc     255,y
+;
+; cycles1 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L0014
+	inc     _cycles1+1
+L0014:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L0008
+;
+; __asm__("adc (255, X)");
+;
+L0015:	adc     (255,x)
+;
+; cycles1 += 6;
+;
+	lda     #$06
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L0016
+	inc     _cycles1+1
+L0016:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L0008
+;
+; __asm__("adc (255), Y");
+;
+L0017:	adc     (255),y
+;
+; cycles1 += 5;
+;
+	lda     #$05
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L0018
+	inc     _cycles1+1
+L0018:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L0008
+;
+; if(temp == 1){
+;
+L0008:	ldx     #$00
+	lda     _temp
+	cmp     #$01
+	jsr     booleq
+	jeq     L001B
+;
+; temp = rand8() % 7;
+;
+	jsr     _rand8
+	jsr     pushax
+	ldx     #$00
+	lda     #$07
+	jsr     tosumodax
+	ldx     #$00
+	sta     _temp
+;
+; switch(temp){
+;
+	ldx     #$00
+	lda     _temp
+	jmp     L001A
+;
+; } 
+;
+L001A:	cmp     #$00
+	jeq     L001C
+	cmp     #$01
+	jeq     L001E
+	cmp     #$02
+	jeq     L0020
+	cmp     #$03
+	jeq     L0022
+	cmp     #$04
+	jeq     L0024
+	cmp     #$05
+	jeq     L0026
+	cmp     #$06
+	jeq     L0028
+	cmp     #$07
+	jeq     L002A
+	jmp     L001B
+;
+; __asm__("sbc #5");
+;
+L001C:	sbc     #5
+;
+; cycles1 += 2;
+;
+	lda     #$02
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L001D
+	inc     _cycles1+1
+L001D:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L001B
+;
+; __asm__("sbc 16");
+;
+L001E:	sbc     16
+;
+; cycles1 += 3;
+;
+	lda     #$03
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L001F
+	inc     _cycles1+1
+L001F:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L001B
+;
+; __asm__("sbc 16, X");
+;
+L0020:	sbc     16,x
+;
+; cycles1 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L0021
+	inc     _cycles1+1
+L0021:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L001B
+;
+; __asm__("sbc 255");
+;
+L0022:	sbc     255
+;
+; cycles1 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L0023
+	inc     _cycles1+1
+L0023:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L001B
+;
+; __asm__("sbc 255, X");
+;
+L0024:	sbc     255,x
+;
+; cycles1 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L0025
+	inc     _cycles1+1
+L0025:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L001B
+;
+; __asm__("sbc 255, Y");
+;
+L0026:	sbc     255,y
+;
+; cycles1 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L0027
+	inc     _cycles1+1
+L0027:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L001B
+;
+; __asm__("sbc (255, X)");
+;
+L0028:	sbc     (255,x)
+;
+; cycles1 += 6;
+;
+	lda     #$06
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L0029
+	inc     _cycles1+1
+L0029:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L001B
+;
+; __asm__("sbc (255), Y");
+;
+L002A:	sbc     (255),y
+;
+; cycles1 += 5;
+;
+	lda     #$05
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L002B
+	inc     _cycles1+1
+L002B:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L001B
+;
+; if(temp == 2){
+;
+L001B:	ldx     #$00
+	lda     _temp
+	cmp     #$02
+	jsr     booleq
+	jeq     L0004
+;
+; temp = rand8() % 5;
+;
+	jsr     _rand8
+	jsr     pushax
+	ldx     #$00
+	lda     #$05
+	jsr     tosumodax
+	ldx     #$00
+	sta     _temp
+;
+; switch(temp){
+;
+	ldx     #$00
+	lda     _temp
+	jmp     L002D
+;
+; }
+;
+L002D:	cmp     #$00
+	jeq     L002F
+	cmp     #$01
+	jeq     L0031
+	cmp     #$02
+	jeq     L0033
+	cmp     #$03
+	jeq     L0035
+	cmp     #$04
+	jeq     L0037
+	jmp     L0004
+;
+; __asm__("asl a");
+;
+L002F:	asl     a
+;
+; cycles1 += 2;
+;
+	lda     #$02
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L0030
+	inc     _cycles1+1
+L0030:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L0004
+;
+; __asm__("asl 16");
+;
+L0031:	asl     16
+;
+; cycles1 += 5;
+;
+	lda     #$05
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L0032
+	inc     _cycles1+1
+L0032:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L0004
+;
+; __asm__("asl 16, x");
+;
+L0033:	asl     16,x
+;
+; cycles1 += 6;
+;
+	lda     #$06
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L0034
+	inc     _cycles1+1
+L0034:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L0004
+;
+; __asm__("asl 255");
+;
+L0035:	asl     255
+;
+; cycles1 += 6;
+;
+	lda     #$06
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L0036
+	inc     _cycles1+1
+L0036:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L0004
+;
+; __asm__("asl 255, x");
+;
+L0037:	asl     255,x
+;
+; cycles1 += 7;
+;
+	lda     #$07
+	clc
+	adc     _cycles1
+	sta     _cycles1
+	bcc     L0038
+	inc     _cycles1+1
+L0038:	ldx     _cycles1+1
+;
+; break;
+;
+	jmp     L0004
+;
+; for(i = 0; i < 100; i++){
+;
+L0004:	ldx     #$00
+	lda     _i
+	inc     _i
+	jmp     L0002
+;
+; for(i = 0; i < 100; i++){
+;
+L0003:	ldx     #$00
+	lda     #$00
+	sta     _i
+L0039:	ldx     #$00
+	lda     _i
+	cmp     #$64
+	jsr     boolult
+	jne     L003C
+	jmp     L003A
+;
+; temp = rand8() % 3;
+;
+L003C:	jsr     _rand8
+	jsr     pushax
+	ldx     #$00
+	lda     #$03
+	jsr     tosumodax
+	ldx     #$00
+	sta     _temp
+;
+; if(temp == 0){
+;
+	ldx     #$00
+	lda     _temp
+	cmp     #$00
+	jsr     booleq
+	jeq     L003F
+;
+; temp = rand8() % 7;
+;
+	jsr     _rand8
+	jsr     pushax
+	ldx     #$00
+	lda     #$07
+	jsr     tosumodax
+	ldx     #$00
+	sta     _temp
+;
+; switch(temp){
+;
+	ldx     #$00
+	lda     _temp
+	jmp     L003E
+;
+; }   
+;
+L003E:	cmp     #$00
+	jeq     L0040
+	cmp     #$01
+	jeq     L0042
+	cmp     #$02
+	jeq     L0044
+	cmp     #$03
+	jeq     L0046
+	cmp     #$04
+	jeq     L0048
+	cmp     #$05
+	jeq     L004A
+	cmp     #$06
+	jeq     L004C
+	cmp     #$07
+	jeq     L004E
+	jmp     L003F
+;
+; __asm__("ora #12");
+;
+L0040:	ora     #12
+;
+; cycles2 += 2;
+;
+	lda     #$02
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L0041
+	inc     _cycles2+1
+L0041:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L003F
+;
+; __asm__("ora 16");
+;
+L0042:	ora     16
+;
+; cycles2 += 3;
+;
+	lda     #$03
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L0043
+	inc     _cycles2+1
+L0043:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L003F
+;
+; __asm__("ora 16, X");
+;
+L0044:	ora     16,x
+;
+; cycles2 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L0045
+	inc     _cycles2+1
+L0045:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L003F
+;
+; __asm__("ora 255");
+;
+L0046:	ora     255
+;
+; cycles2 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L0047
+	inc     _cycles2+1
+L0047:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L003F
+;
+; __asm__("ora 255, X");
+;
+L0048:	ora     255,x
+;
+; cycles2 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L0049
+	inc     _cycles2+1
+L0049:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L003F
+;
+; __asm__("ora 255, Y");
+;
+L004A:	ora     255,y
+;
+; cycles2 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L004B
+	inc     _cycles2+1
+L004B:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L003F
+;
+; __asm__("ora (255, X)");
+;
+L004C:	ora     (255,x)
+;
+; cycles2 += 6;
+;
+	lda     #$06
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L004D
+	inc     _cycles2+1
+L004D:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L003F
+;
+; __asm__("ora (255), Y");
+;
+L004E:	ora     (255),y
+;
+; cycles2 += 5;
+;
+	lda     #$05
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L004F
+	inc     _cycles2+1
+L004F:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L003F
+;
+; if(temp == 1){
+;
+L003F:	ldx     #$00
+	lda     _temp
+	cmp     #$01
+	jsr     booleq
+	jeq     L0052
+;
+; temp = rand8() % 7;
+;
+	jsr     _rand8
+	jsr     pushax
+	ldx     #$00
+	lda     #$07
+	jsr     tosumodax
+	ldx     #$00
+	sta     _temp
+;
+; switch(temp){
+;
+	ldx     #$00
+	lda     _temp
+	jmp     L0051
+;
+; }   
+;
+L0051:	cmp     #$00
+	jeq     L0053
+	cmp     #$01
+	jeq     L0055
+	cmp     #$02
+	jeq     L0057
+	cmp     #$03
+	jeq     L0059
+	cmp     #$04
+	jeq     L005B
+	cmp     #$05
+	jeq     L005D
+	cmp     #$06
+	jeq     L005F
+	cmp     #$07
+	jeq     L0061
+	jmp     L0052
+;
+; __asm__("ora #12");
+;
+L0053:	ora     #12
+;
+; cycles2 += 2;
+;
+	lda     #$02
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L0054
+	inc     _cycles2+1
+L0054:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L0052
+;
+; __asm__("ora 16");
+;
+L0055:	ora     16
+;
+; cycles2 += 3;
+;
+	lda     #$03
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L0056
+	inc     _cycles2+1
+L0056:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L0052
+;
+; __asm__("ora 16, X");
+;
+L0057:	ora     16,x
+;
+; cycles2 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L0058
+	inc     _cycles2+1
+L0058:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L0052
+;
+; __asm__("ora 255");
+;
+L0059:	ora     255
+;
+; cycles2 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L005A
+	inc     _cycles2+1
+L005A:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L0052
+;
+; __asm__("ora 255, X");
+;
+L005B:	ora     255,x
+;
+; cycles2 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L005C
+	inc     _cycles2+1
+L005C:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L0052
+;
+; __asm__("ora 255, Y");
+;
+L005D:	ora     255,y
+;
+; cycles2 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L005E
+	inc     _cycles2+1
+L005E:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L0052
+;
+; __asm__("ora (255, X)");
+;
+L005F:	ora     (255,x)
+;
+; cycles2 += 6;
+;
+	lda     #$06
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L0060
+	inc     _cycles2+1
+L0060:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L0052
+;
+; __asm__("ora (255), Y");
+;
+L0061:	ora     (255),y
+;
+; cycles2 += 5;
+;
+	lda     #$05
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L0062
+	inc     _cycles2+1
+L0062:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L0052
+;
+; if(temp == 2){
+;
+L0052:	ldx     #$00
+	lda     _temp
+	cmp     #$02
+	jsr     booleq
+	jeq     L003B
+;
+; temp = rand8() % 7;
+;
+	jsr     _rand8
+	jsr     pushax
+	ldx     #$00
+	lda     #$07
+	jsr     tosumodax
+	ldx     #$00
+	sta     _temp
+;
+; switch(temp){
+;
+	ldx     #$00
+	lda     _temp
+	jmp     L0064
+;
+; }   
+;
+L0064:	cmp     #$00
+	jeq     L0066
+	cmp     #$01
+	jeq     L0068
+	cmp     #$02
+	jeq     L006A
+	cmp     #$03
+	jeq     L006C
+	cmp     #$04
+	jeq     L006E
+	cmp     #$05
+	jeq     L0070
+	cmp     #$06
+	jeq     L0072
+	cmp     #$07
+	jeq     L0074
+	jmp     L003B
+;
+; __asm__("eor #10");
+;
+L0066:	eor     #10
+;
+; cycles2 += 2;
+;
+	lda     #$02
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L0067
+	inc     _cycles2+1
+L0067:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L003B
+;
+; __asm__("eor 16");
+;
+L0068:	eor     16
+;
+; cycles2 += 3;
+;
+	lda     #$03
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L0069
+	inc     _cycles2+1
+L0069:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L003B
+;
+; __asm__("eor 16, X");
+;
+L006A:	eor     16,x
+;
+; cycles2 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L006B
+	inc     _cycles2+1
+L006B:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L003B
+;
+; __asm__("eor 255");
+;
+L006C:	eor     255
+;
+; cycles2 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L006D
+	inc     _cycles2+1
+L006D:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L003B
+;
+; __asm__("eor 255, X");
+;
+L006E:	eor     255,x
+;
+; cycles2 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L006F
+	inc     _cycles2+1
+L006F:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L003B
+;
+; __asm__("eor 255, Y");
+;
+L0070:	eor     255,y
+;
+; cycles2 += 4;
+;
+	lda     #$04
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L0071
+	inc     _cycles2+1
+L0071:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L003B
+;
+; __asm__("eor (255, X)");
+;
+L0072:	eor     (255,x)
+;
+; cycles2 += 6;
+;
+	lda     #$06
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L0073
+	inc     _cycles2+1
+L0073:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L003B
+;
+; __asm__("eor (255), Y");
+;
+L0074:	eor     (255),y
+;
+; cycles2 += 5;
+;
+	lda     #$05
+	clc
+	adc     _cycles2
+	sta     _cycles2
+	bcc     L0075
+	inc     _cycles2+1
+L0075:	ldx     _cycles2+1
+;
+; break;
+;
+	jmp     L003B
+;
+; for(i = 0; i < 100; i++){
+;
+L003B:	ldx     #$00
+	lda     _i
+	inc     _i
+	jmp     L0039
+;
+; p = get_cpu_status();
+;
+L003A:	jsr     _get_cpu_status
+	sta     _p
+;
+; }
+;
+	rts
+
+.endproc
+
+; ---------------------------------------------------------------
 ; void __near__ handleMenuInput (void)
 ; ---------------------------------------------------------------
 
@@ -1983,7 +3320,7 @@ L000C:	ldy     #$00
 	cmp     #$00
 	jsr     booleq
 	jeq     L000E
-	jmp     L0015
+	jmp     L0014
 ;
 ; accumulator /= x;
 ;
@@ -2076,29 +3413,37 @@ L0011:	ldy     #$00
 	lda     #$00
 	sta     _can_jump
 ;
-; if(pad1 & PAD_B)mouse_speed = 4;
+; if(pad1Next & PAD_B){
 ;
 L0013:	ldx     #$00
-	lda     _pad1
+	lda     _pad1Next
 	ldx     #$00
 	and     #$40
 	stx     tmp1
 	ora     tmp1
 	jeq     L0014
+;
+; cycles1 = 0;
+;
 	ldx     #$00
-	lda     #$04
-	sta     _mouse_speed
+	lda     #$00
+	sta     _cycles1
+	stx     _cycles1+1
 ;
-; else mouse_speed = 2;
+; cycles2 = 0;
 ;
-	jmp     L0015
-L0014:	ldx     #$00
-	lda     #$02
-	sta     _mouse_speed
+	ldx     #$00
+	lda     #$00
+	sta     _cycles2
+	stx     _cycles2+1
+;
+; benchmark();
+;
+	jsr     _benchmark
 ;
 ; }
 ;
-L0015:	jsr     incsp1
+L0014:	jsr     incsp1
 	rts
 
 .endproc
@@ -2510,133 +3855,9 @@ L0009:	jsr     incsp2
 	ldx     #>(_palSprites)
 	jsr     _pal_spr
 ;
-; for(i = 0;i < BALLS_MAX; ++i){
-;
-	ldx     #$00
-	lda     #$00
-	sta     _i
-L0002:	ldx     #$00
-	lda     _i
-	cmp     #$08
-	jsr     boolult
-	jne     L0005
-	jmp     L0003
-;
-; ball_x[i] = rand8();
-;
-L0005:	lda     #<(_ball_x)
-	ldx     #>(_ball_x)
-	clc
-	adc     _i
-	bcc     L0006
-	inx
-L0006:	jsr     pushax
-	jsr     _rand8
-	ldy     #$00
-	jsr     staspidx
-;
-; ball_y[i] = rand8();
-;
-	lda     #<(_ball_y)
-	ldx     #>(_ball_y)
-	clc
-	adc     _i
-	bcc     L0007
-	inx
-L0007:	jsr     pushax
-	jsr     _rand8
-	ldy     #$00
-	jsr     staspidx
-;
-; j = rand8();
-;
-	jsr     _rand8
-	sta     _j
-;
-; spr = 1 + (rand8() % 3);
-;
-	jsr     _rand8
-	jsr     pushax
-	ldx     #$00
-	lda     #$03
-	jsr     tosumodax
-	jsr     incax1
-	ldx     #$00
-	sta     _spr
-;
-; ball_dx[i] = j & 1? -spr:spr;
-;
-	lda     #<(_ball_dx)
-	ldx     #>(_ball_dx)
-	clc
-	adc     _i
-	bcc     L0008
-	inx
-L0008:	jsr     pushax
-	ldx     #$00
-	lda     _j
-	ldx     #$00
-	and     #$01
-	stx     tmp1
-	ora     tmp1
-	jeq     L0009
-	ldx     #$00
-	lda     _spr
-	jsr     negax
-	jmp     L000A
-L0009:	ldx     #$00
-	lda     _spr
-L000A:	ldx     #$00
-	ldy     #$00
-	jsr     staspidx
-;
-; spr = 1 + (rand8() % 3);
-;
-	jsr     _rand8
-	jsr     pushax
-	ldx     #$00
-	lda     #$03
-	jsr     tosumodax
-	jsr     incax1
-	ldx     #$00
-	sta     _spr
-;
-; ball_dy[i] = j & 1? -spr:spr;
-;
-	lda     #<(_ball_dy)
-	ldx     #>(_ball_dy)
-	clc
-	adc     _i
-	bcc     L000B
-	inx
-L000B:	jsr     pushax
-	ldx     #$00
-	lda     _j
-	ldx     #$00
-	and     #$01
-	stx     tmp1
-	ora     tmp1
-	jeq     L000C
-	ldx     #$00
-	lda     _spr
-	jsr     negax
-	jmp     L000D
-L000C:	ldx     #$00
-	lda     _spr
-L000D:	ldx     #$00
-	ldy     #$00
-	jsr     staspidx
-;
-; for(i = 0;i < BALLS_MAX; ++i){
-;
-	ldx     #$00
-	inc     _i
-	lda     _i
-	jmp     L0002
-;
 ; pal_bg(palette); // load the BG palette
 ;
-L0003:	lda     #<(_palette)
+	lda     #<(_palette)
 	ldx     #>(_palette)
 	jsr     _pal_bg
 ;
@@ -2651,8 +3872,8 @@ L0003:	lda     #<(_palette)
 	ldx     #$20
 	lda     #$41
 	jsr     pushax
-	lda     #<(S0002)
-	ldx     #>(S0002)
+	lda     #<(S002F)
+	ldx     #>(S002F)
 	jsr     _put_str
 ;
 ; put_str(NTADR_A(1, 4), "Video mode:");
@@ -2660,8 +3881,8 @@ L0003:	lda     #<(_palette)
 	ldx     #$20
 	lda     #$81
 	jsr     pushax
-	lda     #<(S0003)
-	ldx     #>(S0003)
+	lda     #<(S0030)
+	ldx     #>(S0030)
 	jsr     _put_str
 ;
 ; put_str(NTADR_A(1 ,6), "Author: Beto Perez");
@@ -2669,39 +3890,39 @@ L0003:	lda     #<(_palette)
 	ldx     #$20
 	lda     #$C1
 	jsr     pushax
-	lda     #<(S0004)
-	ldx     #>(S0004)
+	lda     #<(S0031)
+	ldx     #>(S0031)
 	jsr     _put_str
 ;
 ; if(ppu_system()) put_str(NTADR_A(13, 4), "NTSC");
 ;
 	jsr     _ppu_system
 	tax
-	jeq     L000E
+	jeq     L0002
 	ldx     #$20
 	lda     #$8D
 	jsr     pushax
-	lda     #<(S0005)
-	ldx     #>(S0005)
+	lda     #<(S0032)
+	ldx     #>(S0032)
 	jsr     _put_str
 ;
 ; else put_str(NTADR_A(13, 4), "PAL");
 ;
-	jmp     L000F
-L000E:	ldx     #$20
+	jmp     L0003
+L0002:	ldx     #$20
 	lda     #$8D
 	jsr     pushax
-	lda     #<(S0006)
-	ldx     #>(S0006)
+	lda     #<(S0033)
+	ldx     #>(S0033)
 	jsr     _put_str
 ;
 ; put_str(NTADR_A(1, 15), "A: ");
 ;
-L000F:	ldx     #$21
+L0003:	ldx     #$21
 	lda     #$E1
 	jsr     pushax
-	lda     #<(S0007)
-	ldx     #>(S0007)
+	lda     #<(S0034)
+	ldx     #>(S0034)
 	jsr     _put_str
 ;
 ; put_str(NTADR_A(1, 17), "X: 0 1 2 3 4");
@@ -2709,8 +3930,8 @@ L000F:	ldx     #$21
 	ldx     #$22
 	lda     #$21
 	jsr     pushax
-	lda     #<(S0008)
-	ldx     #>(S0008)
+	lda     #<(S0035)
+	ldx     #>(S0035)
 	jsr     _put_str
 ;
 ; put_str(NTADR_A(1, 18), "   5 6 7 8 9");
@@ -2718,8 +3939,8 @@ L000F:	ldx     #$21
 	ldx     #$22
 	lda     #$41
 	jsr     pushax
-	lda     #<(S0009)
-	ldx     #>(S0009)
+	lda     #<(S0036)
+	ldx     #>(S0036)
 	jsr     _put_str
 ;
 ; put_str(NTADR_A(1, 20), "A   X: + -");
@@ -2727,8 +3948,8 @@ L000F:	ldx     #$21
 	ldx     #$22
 	lda     #$81
 	jsr     pushax
-	lda     #<(S000A)
-	ldx     #>(S000A)
+	lda     #<(S0037)
+	ldx     #>(S0037)
 	jsr     _put_str
 ;
 ; put_str(NTADR_A(1, 21), "       * / C");
@@ -2736,17 +3957,44 @@ L000F:	ldx     #$21
 	ldx     #$22
 	lda     #$A1
 	jsr     pushax
-	lda     #<(S000B)
-	ldx     #>(S000B)
+	lda     #<(S0038)
+	ldx     #>(S0038)
 	jsr     _put_str
 ;
-; put_str(NTADR_A(1, 23), "P: ");
+; put_str(NTADR_A(1, 22), "P: ");
 ;
 	ldx     #$22
-	lda     #$E1
+	lda     #$C1
 	jsr     pushax
-	lda     #<(S000C)
-	ldx     #>(S000C)
+	lda     #<(S0039)
+	ldx     #>(S0039)
+	jsr     _put_str
+;
+; put_str(NTADR_A(11, 26), "Benchmark 100 I: (B)");
+;
+	ldx     #$23
+	lda     #$4B
+	jsr     pushax
+	lda     #<(S003A)
+	ldx     #>(S003A)
+	jsr     _put_str
+;
+; put_str(NTADR_A(11, 27), "ADC/SB/SHF:    Cycles");
+;
+	ldx     #$23
+	lda     #$6B
+	jsr     pushax
+	lda     #<(S003B)
+	ldx     #>(S003B)
+	jsr     _put_str
+;
+; put_str(NTADR_A(11, 28), "OR/AND/XOR:    Cycles");
+;
+	ldx     #$23
+	lda     #$8B
+	jsr     pushax
+	lda     #<(S003C)
+	ldx     #>(S003C)
 	jsr     _put_str
 ;
 ; put_str(NTADR_A(1, 27), "POS X: ");
@@ -2754,8 +4002,8 @@ L000F:	ldx     #$21
 	ldx     #$23
 	lda     #$61
 	jsr     pushax
-	lda     #<(S000D)
-	ldx     #>(S000D)
+	lda     #<(S003D)
+	ldx     #>(S003D)
 	jsr     _put_str
 ;
 ; put_str(NTADR_A(1, 28), "POS Y: ");
@@ -2763,8 +4011,8 @@ L000F:	ldx     #$21
 	ldx     #$23
 	lda     #$81
 	jsr     pushax
-	lda     #<(S000E)
-	ldx     #>(S000E)
+	lda     #<(S003E)
+	ldx     #>(S003E)
 	jsr     _put_str
 ;
 ; ppu_on_all();
@@ -2773,11 +4021,11 @@ L000F:	ldx     #$21
 ;
 ; while (1){
 ;
-	jmp     L0012
+	jmp     L0006
 ;
 ; ppu_wait_nmi();
 ;
-L0010:	jsr     _ppu_wait_nmi
+L0004:	jsr     _ppu_wait_nmi
 ;
 ; oam_clear();
 ;
@@ -2840,6 +4088,10 @@ L0010:	jsr     _ppu_wait_nmi
 ;
 	jsr     _update_mario
 ;
+; draw_cycles();
+;
+	jsr     _draw_cycles
+;
 ; pad1 = pad_poll(0);
 ;
 	ldx     #$00
@@ -2860,7 +4112,7 @@ L0010:	jsr     _ppu_wait_nmi
 ;
 ; while (1){
 ;
-L0012:	jmp     L0010
+L0006:	jmp     L0004
 ;
 ; }
 ;

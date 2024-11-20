@@ -1,9 +1,8 @@
  
 /* Original example provided by Doug
 
-	Functionality provided by Beto Perez
-	Last Update 11/14/24 - Sound added - Kieran A
-	; Sound effect used from NESDoug
+	Functionality provided by Beto Perez, Sound Added by Kieran Abesamis
+	Last Update 11/20/24 - Sound Added, Benchmarking Adding
 
 */
 #include "LIB/neslib.h"
@@ -15,6 +14,8 @@
 #define LT_GY 0x10
 #define WHITE 0x30
 
+enum {SFX_JUMP, SFX_DING, SFX_NOISE};
+
 // Player 1 input
 unsigned char pad1 = 0;
 unsigned char pad1Next = 0;
@@ -23,20 +24,15 @@ unsigned char x = 0;
 unsigned char p = 0;
 unsigned char p_temp = 0;
 unsigned char mouse_speed = 2;
+unsigned short cycles1 = 0;
+unsigned short cycles2 = 0;
 
 unsigned char temp = 0;
-unsigned char flags[8] = {'N', 'V', '1', 'B', 'D', 'I', 'Z', 'C'};
+const unsigned char flags[8] = {'N', 'V', '1', 'B', 'D', 'I', 'Z', 'C'};
 
 unsigned char albert_palette = 0;
 
-enum {SFX_JUMP, SFX_DING, SFX_NOISE};
-
-#define MENU_SIZE 127
-#define ENTRY_SIZE 16
-
-
 // there's some oddities in the palette code, black must be 0x0f, white must be 0x30
-
 const unsigned char palSprites[16] = {
 
 	0x0f,0x09,0x26,0x11,
@@ -52,17 +48,6 @@ BLACK, DK_GY, LT_GY, WHITE,
 0,0,0,0,
 0,0,0,0
 }; 
-
-
-
-#define BALLS_MAX	8
-
-//balls parameters, the x, y positions and speed
-
-static unsigned char ball_x[BALLS_MAX];
-static unsigned char ball_y[BALLS_MAX];
-static unsigned char ball_dx[BALLS_MAX];
-static unsigned char ball_dy[BALLS_MAX];
 
 unsigned char i, j = 0;
 unsigned char spr = 0;
@@ -156,20 +141,19 @@ void draw_cpu_status(){
 	// Negative flag
 	if(accumulator & 128) oam_spr(24, 182, flags[0], 0x2);
 
-
 }
 
 
 void draw_albert(){
 
 	for(i = 0; i != 7; ++i){
-
-		for(j = 1; j != 7; ++j){
+		for(j = 2; j != 7; ++j){
 
 			oam_spr((200 + (8 * j)), 16 + (i << 3), (0x80 + j + (i << 4)), albert_palette);
 			
 		}
 	}
+	oam_spr(208, 60, 0xD0, albert_palette);
 }
 
 void draw_mario(unsigned char idle){
@@ -206,10 +190,273 @@ void update_mario(){
 		mario_vel_y = 0;
 		mario_pos_y = 120;
 	}
+}
+
+void draw_cycles(){
+
+	oam_spr(200, 215, (cycles1 % 10) + 0x30, 0x2);
+	oam_spr(192, 215, ((cycles1 / 10) % 10) + 0x30, 0x2);
+	oam_spr(184, 215, ((cycles1 / 100) % 10) + 0x30, 0x2);
+
+	oam_spr(200, 223, (cycles2 % 10) + 0x30, 0x2);
+	oam_spr(192, 223, ((cycles2 / 10) % 10) + 0x30, 0x2);
+	oam_spr(184, 223, ((cycles2 / 100) % 10) + 0x30, 0x2);
+	
+
 
 }
 
-	
+void benchmark(){
+
+	for(i = 0; i < 100; i++){
+
+		temp = rand8() % 3;
+
+		// ADC
+		if(temp == 0){
+			temp = rand8() % 7;
+
+			switch(temp){
+				case 0:
+					__asm__("adc #5");
+					cycles1 += 2;
+					break;
+				case 1:
+					
+					__asm__("adc 16");
+					cycles1 += 3;
+					break;
+				case 2:
+					__asm__("adc 16, X");
+					cycles1 += 4;
+					break;
+				case 3:
+					__asm__("adc 255");
+					cycles1 += 4;
+					break;
+				case 4:
+					__asm__("adc 255, X");
+					cycles1 += 4;
+					break;
+				case 5:
+					__asm__("adc 255, Y");
+					cycles1 += 4;
+					break;
+				case 6:
+					__asm__("adc (255, X)");
+					cycles1 += 6;
+					break;
+				case 7:
+					__asm__("adc (255), Y");
+					cycles1 += 5;
+					break;
+
+			}			
+		}
+		// SBC
+		if(temp == 1){
+
+			temp = rand8() % 7;
+
+			switch(temp){
+				case 0:
+					__asm__("sbc #5");
+					cycles1 += 2;
+					break;
+				case 1:
+					
+					__asm__("sbc 16");
+					cycles1 += 3;
+					break;
+				case 2:
+					__asm__("sbc 16, X");
+					cycles1 += 4;
+					break;
+				case 3:
+					__asm__("sbc 255");
+					cycles1 += 4;
+					break;
+				case 4:
+					__asm__("sbc 255, X");
+					cycles1 += 4;
+					break;
+				case 5:
+					__asm__("sbc 255, Y");
+					cycles1 += 4;
+					break;
+				case 6:
+					__asm__("sbc (255, X)");
+					cycles1 += 6;
+					break;
+				case 7:
+					__asm__("sbc (255), Y");
+					cycles1 += 5;
+					break;
+
+			}	
+		}
+		// ASL
+		if(temp == 2){
+
+			temp = rand8() % 5;
+
+			switch(temp){
+				case 0:
+					__asm__("asl a");
+					cycles1 += 2;
+					break;
+				case 1:
+					__asm__("asl 16");
+					cycles1 += 5;
+					break;
+				case 2:
+					__asm__("asl 16, x");
+					cycles1 += 6;
+					break;
+				case 3:
+					__asm__("asl 255");
+					cycles1 += 6;
+					break;
+				case 4:
+					__asm__("asl 255, x");
+					cycles1 += 7;
+					break;
+			}
+		}
+	}
+
+	for(i = 0; i < 100; i++){
+
+		temp = rand8() % 3;
+
+		// ORA
+		if(temp == 0){
+			temp = rand8() % 7;
+
+			switch(temp){
+				case 0:
+					__asm__("ora #12");
+					cycles2 += 2;
+					break;
+				case 1:
+					
+					__asm__("ora 16");
+					cycles2 += 3;
+					break;
+				case 2:
+					__asm__("ora 16, X");
+					cycles2 += 4;
+					break;
+				case 3:
+					__asm__("ora 255");
+					cycles2 += 4;
+					break;
+				case 4:
+					__asm__("ora 255, X");
+					cycles2 += 4;
+					break;
+				case 5:
+					__asm__("ora 255, Y");
+					cycles2 += 4;
+					break;
+				case 6:
+					__asm__("ora (255, X)");
+					cycles2 += 6;
+					break;
+				case 7:
+					__asm__("ora (255), Y");
+					cycles2 += 5;
+					break;
+
+			}			
+		}
+		// AND
+		if(temp == 1){
+			temp = rand8() % 7;
+
+			switch(temp){
+				case 0:
+					__asm__("ora #12");
+					cycles2 += 2;
+					break;
+				case 1:
+					__asm__("ora 16");
+					cycles2 += 3;
+					break;
+				case 2:
+					__asm__("ora 16, X");
+					cycles2 += 4;
+					break;
+				case 3:
+					__asm__("ora 255");
+					cycles2 += 4;
+					break;
+				case 4:
+					__asm__("ora 255, X");
+					cycles2 += 4;
+					break;
+				case 5:
+					__asm__("ora 255, Y");
+					cycles2 += 4;
+					break;
+				case 6:
+					__asm__("ora (255, X)");
+					cycles2 += 6;
+					break;
+				case 7:
+					__asm__("ora (255), Y");
+					cycles2 += 5;
+					break;
+
+			}			
+		}
+		// XOR
+		if(temp == 2){
+			temp = rand8() % 7;
+
+			switch(temp){
+				case 0:
+					__asm__("eor #10");
+					cycles2 += 2;
+					break;
+				case 1:
+					
+					__asm__("eor 16");
+					cycles2 += 3;
+					break;
+				case 2:
+					__asm__("eor 16, X");
+					cycles2 += 4;
+					break;
+				case 3:
+					__asm__("eor 255");
+					cycles2 += 4;
+					break;
+				case 4:
+					__asm__("eor 255, X");
+					cycles2 += 4;
+					break;
+				case 5:
+					__asm__("eor 255, Y");
+					cycles2 += 4;
+					break;
+				case 6:
+					__asm__("eor (255, X)");
+					cycles2 += 6;
+					break;
+				case 7:
+					__asm__("eor (255), Y");
+					cycles2 += 5;
+					break;
+
+			}			
+		}
+	}
+
+	p = get_cpu_status();
+
+}
+
 
 // Another function, handles input and logic
 void handleMenuInput(void){
@@ -218,7 +465,7 @@ void handleMenuInput(void){
 	if(PAD_UP & pad1){ 
 		cursorY -= mouse_speed;
 		if(cursorY < 1) cursorY = 1;
-	
+
 	}
 
 	// Down the menu, only move down if we are not at the bottom of the menu
@@ -291,13 +538,15 @@ void handleMenuInput(void){
 
 		}		
 	}
-	if(pad1 & PAD_B)mouse_speed = 4;
-	else mouse_speed = 2;
 
+	if(pad1Next & PAD_B){
+		cycles1 = 0;
+		cycles2 = 0;
+		benchmark();
+
+	}
+	
 }
-
-
-
 
 // Hover / register a value from the cursor
 // This does a high to low level check (regions then individual sprites) to reduce if's and checks
@@ -361,7 +610,6 @@ void hover(void){
 	unsigned char result = eval_pos();
 	unsigned char pal = 0x0;
 
-
 	if(result == 255){
 		return;
 	}
@@ -419,7 +667,6 @@ void hover(void){
 		oam_spr(96, 167, result, pal);
 		return;
 	}
-
 }
 
 void main (void) {
@@ -428,31 +675,14 @@ void main (void) {
 
 	pal_spr(palSprites);
 	
-	for(i = 0;i < BALLS_MAX; ++i){
-
-		ball_x[i] = rand8();
-		ball_y[i] = rand8();
-		j = rand8();
-
-		// x speed
-		spr = 1 + (rand8() % 3);
-		ball_dx[i] = j & 1? -spr:spr;
-
-		// y speed
-
-		spr = 1 + (rand8() % 3);
-		ball_dy[i] = j & 1? -spr:spr;
-	}
-
 	pal_bg(palette); //	load the BG palette
 	// Load pallete colors
 	pal_spr(palSprites);
 
 	put_str(NTADR_A(1, 2), "Museum Emulation Systems");
 	put_str(NTADR_A(1, 4), "Video mode:");
-	put_str(NTADR_A(1 ,6), "Authors: Beto Perez Kieran Abesamis");
+	put_str(NTADR_A(1 ,6), "Author: Beto Perez");
 
-	
 	if(ppu_system()) put_str(NTADR_A(13, 4), "NTSC");
 	else put_str(NTADR_A(13, 4), "PAL");
 
@@ -462,9 +692,12 @@ void main (void) {
 	put_str(NTADR_A(1, 20), "A   X: + -");
 	put_str(NTADR_A(1, 21), "       * / C");
 
+	put_str(NTADR_A(1, 22), "P: ");
 
-	put_str(NTADR_A(1, 23), "P: ");
 
+	put_str(NTADR_A(11, 26), "Benchmark 100 I: (B)");
+	put_str(NTADR_A(11, 27), "ADC/SB/SHF:    Cycles");
+	put_str(NTADR_A(11, 28), "OR/AND/XOR:    Cycles");
 	put_str(NTADR_A(1, 27), "POS X: ");
 	put_str(NTADR_A(1, 28), "POS Y: ");
 	//draw_bg_menu(page);
@@ -493,6 +726,8 @@ void main (void) {
 		draw_albert();
 
 		update_mario();
+
+		draw_cycles();
 
 		// Read player1, go through logic depending on the inputs
 		pad1 = pad_poll(0);
